@@ -2,7 +2,6 @@ import {
   Input as NativeBaseInput,
   IInputProps,
   FormControl,
-  Pressable,
 } from "native-base";
 
 type Props = IInputProps & {
@@ -12,7 +11,7 @@ type Props = IInputProps & {
 export function Input({ errorMessage = null, isInvalid, ...rest }: Props) {
   const invalid = !!errorMessage || isInvalid;
   return (
-    <FormControl isInvalid={invalid} mb="2">
+    <FormControl isInvalid={invalid} mb="5">
       <NativeBaseInput
         isInvalid={invalid}
         _invalid={{
@@ -26,11 +25,10 @@ export function Input({ errorMessage = null, isInvalid, ...rest }: Props) {
         fontSize="md"
         color="black"
         fontFamily="body"
-        placeholderTextColor="gray.300"
+        placeholderTextColor="gray.400"
         _focus={{ bg: "white", borderColor: "gray.400" }}
         {...rest}
       />
-      <Pressable></Pressable>
       <FormControl.ErrorMessage _text={{ color: "red.400" }}>
         {errorMessage}
       </FormControl.ErrorMessage>
