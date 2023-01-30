@@ -1,28 +1,25 @@
-import { Box, NativeBaseProvider } from "native-base";
-import { StatusBar } from "react-native";
+import { Loading } from "@components/Loading";
 import {
-  useFonts,
   Karla_400Regular,
   Karla_700Bold,
+  useFonts,
 } from "@expo-google-fonts/karla";
-import { Loading } from "@components/Loading";
-import { AuthRoutes } from "@routes/auth.routes";
+import { Routes } from "@routes/index";
+import { Box, NativeBaseProvider } from "native-base";
+import { StatusBar } from "react-native";
 import { THEME } from "./src/theme/theme";
-import { NavigationContainer } from "@react-navigation/native";
 
 export default function App() {
   const [fontsLoaded] = useFonts({ Karla_400Regular, Karla_700Bold });
   return (
     <NativeBaseProvider theme={THEME}>
       <StatusBar
-        backgroundColor="transparent"
+        backgroundColor={THEME.colors.gray[200]}
         barStyle="dark-content"
         translucent
       />
-      <Box flex={1} bg="gray.300">
-        <NavigationContainer>
-          {fontsLoaded ? <AuthRoutes /> : <Loading />}
-        </NavigationContainer>
+      <Box flex={1} bg="white">
+        {fontsLoaded ? <Routes /> : <Loading />}
       </Box>
     </NativeBaseProvider>
   );
