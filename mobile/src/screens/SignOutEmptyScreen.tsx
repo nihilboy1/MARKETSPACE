@@ -1,11 +1,11 @@
 import { HStack, Text } from "native-base";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export function Home() {
+export function SignOutEmptyScreen() {
   return (
     <SafeAreaView>
       <HStack>
-        <Text>Home</Text>
+        <Text>SignOutEmptyScreen</Text>
       </HStack>
     </SafeAreaView>
   );
