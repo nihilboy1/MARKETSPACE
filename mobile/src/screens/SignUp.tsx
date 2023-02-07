@@ -179,7 +179,7 @@ export function SignUp() {
                 )}
               />
 
-              <Button title="Criar" variant="link" />
+              <Button title="Criar" variant="link" w="full" />
             </Center>
           </VStack>
           <VStack flex={1}>
@@ -187,7 +187,7 @@ export function SignUp() {
               <Text color="gray.500" mb="4">
                 Já tem uma conta?
               </Text>
-              <Button title="Ir para Login" onPress={moveToLogin} />
+              <Button title="Ir para Login" w="full" onPress={moveToLogin} />
             </Center>
           </VStack>
         </ScrollView>

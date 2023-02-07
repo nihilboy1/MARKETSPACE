@@ -9,17 +9,22 @@ export function Button({ title, variant, ...rest }: ButtonProps) {
     <NativeBaseButton
       {...rest}
       p="3.5"
-      w="full"
+      borderRadius={10}
       _pressed={{ opacity: 0.7 }}
       bgColor={`${
         variant === "link"
           ? "gray.800"
           : variant === "solid"
           ? "blue.400"
-          : "gray.400"
+          : "gray.300"
       }`}
     >
-      <Text color="white" fontFamily="heading">
+      <Text
+        color={`${
+          variant !== "link" && variant !== "solid" ? "gray.800" : "white"
+        }`}
+        fontFamily="heading"
+      >
         {title}
       </Text>
     </NativeBaseButton>

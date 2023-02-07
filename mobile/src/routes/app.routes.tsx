@@ -21,18 +21,24 @@ export type AppNavigatorRoutesProps = BottomTabNavigationProp<AppRoutes>;
 const { Navigator, Screen } = createBottomTabNavigator<AppRoutes>();
 
 export function AppRoutes() {
-  const { sizes } = useTheme();
+  const { sizes, colors } = useTheme();
+  const iconsSizes = sizes[6];
+
   return (
     <Navigator
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        tabBarActiveTintColor: colors.gray[600],
+        tabBarInactiveTintColor: colors.gray[400],
         tabBarStyle: {
-          backgroundColor: "white",
+          backgroundColor: colors.gray[100],
           borderTopWidth: 0,
           height: Platform.OS === "android" ? "auto" : 96,
           paddingBottom: sizes[8],
           paddingTop: sizes[8],
+          justifyContent: "center",
+          alignItems: "center",
         },
       }}
     >
@@ -40,7 +46,13 @@ export function AppRoutes() {
         name="home"
         component={Home}
         options={{
-          tabBarIcon: () => <HouseLine size={26} />,
+          tabBarIcon: ({ color, focused }) => (
+            <HouseLine
+              size={iconsSizes}
+              color={color}
+              weight={focused ? "bold" : "regular"}
+            />
+          ),
         }}
       />
 
@@ -48,9 +60,11 @@ export function AppRoutes() {
         name="myads"
         component={MyAds}
         options={{
-          tabBarIcon: () => (
+          tabBarIcon: ({ color, focused }) => (
             <TagSimple
-              size={26}
+              size={iconsSizes}
+              color={color}
+              weight={focused ? "bold" : "regular"}
               style={{ transform: [{ rotate: "-135deg" }] }}
             />
           ),
@@ -60,7 +74,7 @@ export function AppRoutes() {
         name="signOutEmptyScreen"
         component={SignOutEmptyScreen}
         options={{
-          tabBarIcon: () => <SignOut size={26} />,
+          tabBarIcon: () => <SignOut size={26} color={colors.red[400]} />,
         }}
       />
     </Navigator>

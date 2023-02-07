@@ -51,7 +51,12 @@ export function SignIn() {
       style={{ flex: 1 }}
       onPress={() => handleDismiss()}
     >
-      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: "white",
+        }}
+      >
         <KeyboardAwareScrollView keyboardShouldPersistTaps="always">
           <VStack
             borderBottomLeftRadius="32"
@@ -109,7 +114,7 @@ export function SignIn() {
                 )}
               />
 
-              <Button title="Entrar" variant="solid" />
+              <Button title="Entrar" variant="solid" w="full" />
             </Center>
           </VStack>
           <VStack flex={1}>
@@ -117,7 +122,11 @@ export function SignIn() {
               <Text color="gray.500" mb="4">
                 Ainda não tem acesso?
               </Text>
-              <Button title="Crie uma conta" onPress={moveToCreateAccount} />
+              <Button
+                title="Crie uma conta"
+                onPress={moveToCreateAccount}
+                w="full"
+              />
             </Center>
           </VStack>
         </KeyboardAwareScrollView>
