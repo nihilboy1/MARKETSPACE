@@ -2,6 +2,7 @@ import DefaultAvatar from "@assets/default-avatar.svg";
 import { Button } from "@components/Button";
 import { Input } from "@components/Input";
 import { MiniCardAd } from "@components/MiniCardAd";
+import { useNavigation } from "@react-navigation/native";
 import {
   Box,
   FlatList,
@@ -26,6 +27,7 @@ import {
 } from "phosphor-react-native";
 import { useState } from "react";
 
+import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import {
   Keyboard,
   TouchableOpacity,
@@ -34,10 +36,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FAKEDATA } from "../data/data";
 
-export type PostedProducts = {
+export type PostedProduct = {
   productName: string;
   price: string;
-  coverImage: string;
+  images: string[];
   condition: "new" | "used";
 };
 const paymentOptionsDATA = [
@@ -57,13 +59,20 @@ const paymentOptionsDATA = [
 ];
 
 export function Home() {
+  const { navigate } = useNavigation<AppNavigatorRoutesProps>();
+  const { sizes, colors } = useTheme();
+
+  const iconsSizes = sizes[6];
+  const containerPadding = sizes[8];
+  const avatarSize = sizes[12];
+
   const [postedProducts, setPostedProducts] =
-    useState<PostedProducts[]>(FAKEDATA);
+    useState<PostedProduct[]>(FAKEDATA);
+  const [radioValue, setRadioValue] =
+    useState<PostedProduct["condition"]>("new");
   const [acceptExchange, setAcceptExchange] = useState(false);
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [paymentOptions, setPaymentOptions] = useState(paymentOptionsDATA);
-  const [radioValue, setRadioValue] =
-    useState<PostedProducts["condition"]>("new");
 
   const handleSetPaymentOptions = (id: number) => {
     const updatedOptions = paymentOptions.map((option, i) => {
@@ -84,13 +93,12 @@ export function Home() {
     setAcceptExchange(false);
   }
 
-  const { sizes, colors } = useTheme();
-  const iconsSizes = sizes[6];
-  const containerPadding = sizes[8];
-  const avatarSize = sizes[12];
-
   function handleDismiss() {
     Keyboard.dismiss();
+  }
+
+  function moveToAdDetails(data: PostedProduct) {
+    navigate("addetails", { data });
   }
 
   return (
@@ -219,9 +227,10 @@ export function Home() {
             <MiniCardAd
               key={item.productName}
               condition={item.condition}
-              coverImage={item.coverImage}
+              images={item.images}
               price={item.price}
               productName={item.productName}
+              moveTo={moveToAdDetails}
             />
           )}
           numColumns={2}

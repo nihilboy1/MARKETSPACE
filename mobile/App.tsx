@@ -7,20 +7,23 @@ import {
 import { Routes } from "@routes/index";
 import { Box, NativeBaseProvider } from "native-base";
 import { StatusBar } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { THEME } from "./src/theme/theme";
 
 export default function App() {
   const [fontsLoaded] = useFonts({ Karla_400Regular, Karla_700Bold });
   return (
-    <NativeBaseProvider theme={THEME}>
-      <StatusBar
-        backgroundColor={THEME.colors.gray[200]}
-        barStyle="dark-content"
-        translucent
-      />
-      <Box flex={1} bg="white">
-        {fontsLoaded ? <Routes /> : <Loading />}
-      </Box>
-    </NativeBaseProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NativeBaseProvider theme={THEME}>
+        <StatusBar
+          backgroundColor={THEME.colors.gray[200]}
+          barStyle="dark-content"
+          translucent
+        />
+        <Box flex={1} bg="white">
+          {fontsLoaded ? <Routes /> : <Loading />}
+        </Box>
+      </NativeBaseProvider>
+    </GestureHandlerRootView>
   );
 }

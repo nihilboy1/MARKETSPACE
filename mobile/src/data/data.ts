@@ -1,71 +1,70 @@
-import { PostedProducts } from "@screens/Home";
+import { PostedProduct } from "@screens/Home";
 
-export const FAKEDATA: PostedProducts[] = [
+export const FAKEDATA: PostedProduct[] = [
   {
     productName: "Tenis Pro",
     condition: "new",
     price: "59,90",
-    coverImage: "src/assets/product-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Relógio Tech",
     condition: "used",
     price: "199,00",
-    coverImage: "D:/GITHUB/MARKETSPACE/mobile/src/assets/watch-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Notebook Gamer",
     condition: "new",
     price: "2.499,00",
-    coverImage: "D:/GITHUB/MARKETSPACE/mobile/src/assets/laptop-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Smartphone X",
     condition: "used",
     price: "1.099,00",
-    coverImage: "D:/GITHUB/MARKETSPACE/mobile/src/assets/phone-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Tablet Plus",
     condition: "new",
     price: "799,00",
-    coverImage: "D:/GITHUB/MARKETSPACE/mobile/src/assets/tablet-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Fone de Ouvido Wireless",
     condition: "used",
     price: "299,00",
-    coverImage: "D:/GITHUB/MARKETSPACE/mobile/src/assets/headphones-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Smart TV 4K",
     condition: "new",
     price: "2.199,00",
-    coverImage: "D:/GITHUB/MARKETSPACE/mobile/src/assets/tv-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Câmera Fotográfica",
     condition: "used",
     price: "1.499,00",
-    coverImage: "D:/GITHUB/MARKETSPACE/mobile/src/assets/camera-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Console de Jogos",
     condition: "new",
     price: "1.999,00",
-    coverImage: "D:/GITHUB/MARKETSPACE/mobile/src/assets/console-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Bicicleta Eletrônica",
     condition: "used",
     price: "3.499,00",
-    coverImage: "D:/GITHUB/MARKETSPACE/mobile/src/assets/bicycle-image.png",
+    images: ["1", "2", "3"],
   },
   {
     productName: "Aspirador de Pó",
     condition: "new",
     price: "499,00",
-    coverImage:
-      "D:/GITHUB/MARKETSPACE/mobile/src/assets/vacuum-cleaner-image.png",
+    images: ["1", "2", "3"],
   },
 ];

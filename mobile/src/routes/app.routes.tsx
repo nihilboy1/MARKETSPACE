@@ -4,7 +4,8 @@ import {
   BottomTabNavigationProp,
   createBottomTabNavigator,
 } from "@react-navigation/bottom-tabs";
-import { Home } from "@screens/Home";
+import { AdDetails } from "@screens/AdDetails";
+import { Home, PostedProduct } from "@screens/Home";
 import { MyAds } from "@screens/MyAds";
 import { SignOutEmptyScreen } from "@screens/SignOutEmptyScreen";
 import { useTheme } from "native-base";
@@ -14,6 +15,7 @@ type AppRoutes = {
   home: undefined;
   myads: undefined;
   signOutEmptyScreen: undefined;
+  addetails: { data: PostedProduct };
 };
 
 export type AppNavigatorRoutesProps = BottomTabNavigationProp<AppRoutes>;
@@ -69,6 +71,11 @@ export function AppRoutes() {
             />
           ),
         }}
+      />
+      <Screen
+        name="addetails"
+        component={AdDetails}
+        options={{ tabBarButton: () => null }}
       />
       <Screen
         name="signOutEmptyScreen"

@@ -1,25 +1,30 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
 import miniCardImage from "@assets/product-image.png";
+import { PostedProduct } from "@screens/Home";
 import { HStack, Image, Text, VStack, useTheme } from "native-base";
 import { TouchableOpacity } from "react-native";
 
 type MiniCardAdProps = {
   productName: string;
   price: string;
-  coverImage: string;
-  condition: string;
+  images: string[];
+  condition: "new" | "used";
+  moveTo: (data: PostedProduct) => void;
 };
 
 export function MiniCardAd({
   productName,
   price,
   condition,
-  coverImage,
+  images,
+  moveTo,
 }: MiniCardAdProps) {
   const { sizes, colors } = useTheme();
   const avatarSize = sizes[8];
+
   return (
     <TouchableOpacity
+      onPress={() => moveTo({ condition, images, price, productName })}
       style={{ flex: 1, paddingHorizontal: 6, maxWidth: "50%" }}
     >
       <VStack overflow="hidden" mt="6">
