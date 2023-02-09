@@ -98,7 +98,7 @@ export function Home() {
   }
 
   function moveToAdDetails(data: PostedProduct) {
-    navigate("addetails", { data });
+    navigate("productDetails", { data });
   }
 
   return (

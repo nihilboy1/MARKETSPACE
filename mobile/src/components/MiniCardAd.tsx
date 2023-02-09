@@ -19,18 +19,23 @@ export function MiniCardAd({
   images,
   moveTo,
 }: MiniCardAdProps) {
-  const { sizes, colors } = useTheme();
+  const { sizes } = useTheme();
   const avatarSize = sizes[8];
 
   return (
     <TouchableOpacity
       onPress={() => moveTo({ condition, images, price, productName })}
-      style={{ flex: 1, paddingHorizontal: 6, maxWidth: "50%" }}
+      style={{
+        flex: 1,
+        paddingHorizontal: 6,
+        maxWidth: "50%",
+      }}
     >
       <VStack overflow="hidden" mt="6">
         <Image
           alt="Imagem do produto"
           w="full"
+          h="32"
           borderRadius="xl"
           source={miniCardImage}
           resizeMode="cover"
