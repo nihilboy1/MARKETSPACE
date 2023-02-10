@@ -11,7 +11,7 @@ import { Platform } from "react-native";
 
 type AppTabsRoutes = {
   home: undefined;
-  myads: undefined;
+  myAds: undefined;
   signOutEmptyScreen: undefined;
 };
 
@@ -55,7 +55,7 @@ export function HomeTabs() {
       />
 
       <Screen
-        name="myads"
+        name="myAds"
         component={MyAds}
         options={{
           tabBarIcon: ({ color, focused }) => (

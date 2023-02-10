@@ -10,6 +10,7 @@ type MiniCardAdProps = {
   images: string[];
   condition: "new" | "used";
   moveTo: (data: PostedProduct) => void;
+  mine?: boolean;
 };
 
 export function MiniCardAd({
@@ -18,6 +19,7 @@ export function MiniCardAd({
   condition,
   images,
   moveTo,
+  mine,
 }: MiniCardAdProps) {
   const { sizes } = useTheme();
   const avatarSize = sizes[8];
@@ -48,7 +50,11 @@ export function MiniCardAd({
           w="95%"
           mt="1"
         >
-          <DefaultAvatar width={avatarSize} height={avatarSize} />
+          <DefaultAvatar
+            width={avatarSize}
+            height={avatarSize}
+            opacity={mine ? 0 : 1}
+          />
           <Text
             p="1"
             px="3"

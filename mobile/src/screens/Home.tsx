@@ -23,10 +23,10 @@ import {
   Square,
   TagSimple,
   X,
-  XCircle,
 } from "phosphor-react-native";
 import { useState } from "react";
 
+import { ConditionRadio } from "@components/ConditionRadio";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import {
   Keyboard,
@@ -97,8 +97,16 @@ export function Home() {
     Keyboard.dismiss();
   }
 
+  function moveToCreateAd() {
+    navigate("createAd");
+  }
+
   function moveToAdDetails(data: PostedProduct) {
     navigate("productDetails", { data });
+  }
+
+  function moveToMyAds() {
+    navigate("myAds");
   }
 
   return (
@@ -125,6 +133,7 @@ export function Home() {
             </VStack>
           </HStack>
           <Button
+            onPress={() => moveToCreateAd()}
             title="Criar anúncio"
             variant="link"
             leftIcon={
@@ -138,7 +147,11 @@ export function Home() {
           <Text fontSize={16} color="gray.500" marginBottom="4">
             Seus produtos anunciados para venda
           </Text>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              moveToMyAds();
+            }}
+          >
             <HStack
               p="4"
               bgColor={colors.blue[50]}
@@ -260,80 +273,10 @@ export function Home() {
                 <Text fontSize="16" fontWeight="bold" color="gray.500" mb="2">
                   Condição
                 </Text>
-                <HStack>
-                  <TouchableOpacity
-                    onPress={() => setRadioValue("new")}
-                    style={{
-                      padding: 8,
-                      paddingHorizontal: 14,
-                      borderRadius: 22,
-                      minWidth: 60,
-                      marginRight: 15,
-                      backgroundColor: `${
-                        radioValue === "new"
-                          ? colors.blue[400]
-                          : colors.gray[300]
-                      }`,
-                    }}
-                  >
-                    <HStack alignItems="center">
-                      <Text
-                        fontFamily="heading"
-                        textAlign="center"
-                        pb="0.5"
-                        color={`${
-                          radioValue === "new" ? "white" : colors.gray[500]
-                        }`}
-                      >
-                        NOVO
-                      </Text>
-                      {radioValue === "new" && (
-                        <XCircle
-                          size={18}
-                          color="white"
-                          weight="fill"
-                          style={{ marginLeft: 6 }}
-                        />
-                      )}
-                    </HStack>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setRadioValue("used")}
-                    style={{
-                      padding: 8,
-                      paddingHorizontal: 14,
-                      borderRadius: 22,
-                      minWidth: 60,
-                      marginRight: 15,
-                      backgroundColor: `${
-                        radioValue === "used"
-                          ? colors.blue[400]
-                          : colors.gray[300]
-                      }`,
-                    }}
-                  >
-                    <HStack alignItems="center">
-                      <Text
-                        fontFamily="heading"
-                        textAlign="center"
-                        pb="0.5"
-                        color={`${
-                          radioValue === "used" ? "white" : colors.gray[500]
-                        }`}
-                      >
-                        USADO
-                      </Text>
-                      {radioValue === "used" && (
-                        <XCircle
-                          size={18}
-                          color="white"
-                          weight="fill"
-                          style={{ marginLeft: 6 }}
-                        />
-                      )}
-                    </HStack>
-                  </TouchableOpacity>
-                </HStack>
+                <ConditionRadio
+                  setRadioValue={setRadioValue}
+                  radioValue={radioValue}
+                />
               </VStack>
               <VStack mb="6">
                 <Text fontSize="16" fontWeight="bold" color="gray.500" mb="2">

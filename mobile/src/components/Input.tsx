@@ -8,7 +8,12 @@ type Props = IInputProps & {
   errorMessage?: string | null;
 };
 
-export function Input({ errorMessage = null, isInvalid, ...rest }: Props) {
+export function Input({
+  h = "12",
+  errorMessage = null,
+  isInvalid,
+  ...rest
+}: Props) {
   const invalid = !!errorMessage || isInvalid;
   return (
     <FormControl isInvalid={invalid}>
@@ -18,7 +23,7 @@ export function Input({ errorMessage = null, isInvalid, ...rest }: Props) {
           borderColor: "red.400",
         }}
         bg="white"
-        h="12"
+        h={h}
         px="4"
         borderWidth="1"
         borderColor="white"

@@ -1,34 +1,28 @@
 import { MiniCardAd } from "@components/MiniCardAd";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { FlatList, HStack, Select, Text, useTheme } from "native-base";
 import { CaretDown, Plus } from "phosphor-react-native";
 import { useState } from "react";
-import { Linking, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FAKEDATA } from "../data/data";
 import { PostedProduct } from "./Home";
 
-type AdDetailRouteParams = {
-  data: PostedProduct;
-};
-
 export function MyAds() {
+  const { navigate } = useNavigation<AppNavigatorRoutesProps>();
+
   const [myAdsStateFilter, setMyAdsStateFilter] = useState<
     "todos" | "ativos" | "inativos"
   >("todos");
   const [postedProducts, setPostedProducts] =
     useState<PostedProduct[]>(FAKEDATA);
   const { colors, sizes } = useTheme();
-  const avatarSize = sizes[8];
 
-  async function linkToSellerWhatsapp() {
-    await Linking.openURL("https://wa.me/5584987055995");
+  function moveToCreateAd() {
+    navigate("createAd");
   }
-
-  const route = useRoute();
-  const { goBack } = useNavigation();
-
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: colors.gray[200], padding: 25 }}
@@ -39,7 +33,7 @@ export function MyAds() {
           Meus anúncios
         </Text>
         <TouchableOpacity
-          onPress={goBack}
+          onPress={() => moveToCreateAd()}
           hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
         >
           <Plus />
@@ -49,6 +43,9 @@ export function MyAds() {
         <Text>9 anuncíos</Text>
         <Select
           selectedValue={myAdsStateFilter}
+          _selectedItem={{
+            bg: "gray.200",
+          }}
           minWidth="110"
           dropdownIcon={
             <TouchableWithoutFeedback style={{ marginRight: 6 }}>
@@ -79,6 +76,7 @@ export function MyAds() {
         }}
         renderItem={({ item }) => (
           <MiniCardAd
+            mine
             key={item.productName}
             condition={item.condition}
             images={item.images}
