@@ -1,21 +1,21 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
 import LogoSvg from "@assets/logo-marketspace-mini.svg";
-
+import { Button } from "@components/Button";
 import { Input } from "@components/Input";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigation } from "@react-navigation/native";
+import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 import { Box, Center, ScrollView, Text, VStack } from "native-base";
 import { Eye, EyeClosed, PencilSimpleLine } from "phosphor-react-native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-import { Button } from "@components/Button";
-import { useNavigation } from "@react-navigation/native";
-import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 import {
   Keyboard,
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import * as yup from "yup";
 import { THEME } from "../theme/theme";
 
 const EYECOLOR = THEME.colors.gray[400];
@@ -23,16 +23,49 @@ const EYECOLOR = THEME.colors.gray[400];
 type FormData = {
   name: string;
   email: string;
-  phone: string;
+  whatsApp: string;
   password: string;
   passwordConfirmation: string;
 };
 
+const signUpValidationSchema = yup.object({
+  name: yup.string().required("Informe seu nome"),
+  whatsApp: yup.string().required("Informe um telefone com Whatsapp"),
+  email: yup
+    .string()
+    .required("Informe seu melhor E-mail")
+    .email("O E-mail informado é inválido"),
+  password: yup
+    .string()
+    .required("Informe uma senha")
+    .min(6, "A senha deve ter ao menos 6 dígitos"),
+  passwordConfirmation: yup
+    .string()
+    .required("Confirme a senha")
+    .oneOf([yup.ref("password")], "A confirmação de senha não confere"),
+});
+
 export function SignUp() {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      name: "",
+      email: "",
+      whatsApp: "",
+      password: "",
+      passwordConfirmation: "",
+    },
+    resolver: yupResolver(signUpValidationSchema),
+  });
+
   const { navigate } = useNavigation<AuthNavigatorRoutesProps>();
+
   const [passwordVisibility, setPasswordVisibility] = useState(false);
 
-  const handleClick = () => {
+  const handleSetPasswordVisibility = () => {
     setPasswordVisibility(!passwordVisibility);
   };
 
@@ -40,15 +73,19 @@ export function SignUp() {
     Keyboard.dismiss();
   }
 
+  function handleSignUp({
+    name,
+    email,
+    whatsApp,
+    password,
+    passwordConfirmation,
+  }: FormData) {
+    console.log(name, email, whatsApp, password, passwordConfirmation);
+  }
+
   function moveToLogin() {
     navigate("signIn");
   }
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>();
 
   return (
     <TouchableWithoutFeedback
@@ -117,12 +154,12 @@ export function SignUp() {
               />
               <Controller
                 control={control}
-                name="phone"
+                name="whatsApp"
                 render={({ field: { onChange } }) => (
                   <Input
-                    placeholder="Telefone"
+                    placeholder="WhatsApp"
                     onChangeText={onChange}
-                    errorMessage={errors.phone?.message}
+                    errorMessage={errors.whatsApp?.message}
                   />
                 )}
               />
@@ -134,7 +171,7 @@ export function SignUp() {
                     rightElement={
                       <TouchableOpacity
                         hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
-                        onPress={handleClick}
+                        onPress={handleSetPasswordVisibility}
                         style={{ marginRight: 10 }}
                       >
                         {passwordVisibility ? (
@@ -160,7 +197,7 @@ export function SignUp() {
                     rightElement={
                       <TouchableOpacity
                         hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
-                        onPress={handleClick}
+                        onPress={handleSetPasswordVisibility}
                         style={{ marginRight: 10 }}
                       >
                         {passwordVisibility ? (
@@ -172,22 +209,33 @@ export function SignUp() {
                     }
                     placeholder="Confirmação de senha"
                     secureTextEntry={!passwordVisibility}
+                    onSubmitEditing={handleSubmit(handleSignUp)}
                     autoCapitalize="none"
                     onChangeText={onChange}
+                    returnKeyType="send"
                     errorMessage={errors.passwordConfirmation?.message}
                   />
                 )}
               />
 
-              <Button title="Criar" variant="link" w="full" />
+              <Button
+                title="Criar"
+                variant="link"
+                w="full"
+                onPress={handleSubmit(handleSignUp)}
+              />
             </Center>
           </VStack>
-          <VStack flex={1}>
+          <VStack>
             <Center p="8">
               <Text color="gray.500" mb="4">
                 Já tem uma conta?
               </Text>
-              <Button title="Ir para Login" w="full" onPress={moveToLogin} />
+              <Button
+                title="Voltar para Login"
+                w="full"
+                onPress={moveToLogin}
+              />
             </Center>
           </VStack>
         </ScrollView>

@@ -20,11 +20,12 @@ export function Input({
       <NativeBaseInput
         isInvalid={invalid}
         _invalid={{
-          borderColor: "red.400",
+          borderColor: "red.300",
         }}
         bg="white"
         h={h}
         px="4"
+        mb={invalid ? "-2" : "4"}
         borderWidth="1"
         borderColor="white"
         fontSize="md"
@@ -34,7 +35,10 @@ export function Input({
         _focus={{ bg: "white", borderColor: "gray.400" }}
         {...rest}
       />
-      <FormControl.ErrorMessage _text={{ color: "red.400" }}>
+      <FormControl.ErrorMessage
+        _text={{ color: "red.300", fontWeight: "bold" }}
+        mb="2"
+      >
         {errorMessage}
       </FormControl.ErrorMessage>
     </FormControl>

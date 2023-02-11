@@ -9,7 +9,7 @@ export function Button({ title, variant, ...rest }: ButtonProps) {
     <NativeBaseButton
       {...rest}
       p="3.5"
-      borderRadius={10}
+      borderRadius="md"
       _pressed={{ opacity: 0.7 }}
       bgColor={`${
         variant === "link"

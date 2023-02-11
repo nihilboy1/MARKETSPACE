@@ -42,7 +42,7 @@ export type PostedProduct = {
   images: string[];
   condition: "new" | "used";
 };
-const paymentOptionsDATA = [
+export const paymentOptionsDATA = [
   { id: 1, label: "Boleto", checked: false },
   { id: 2, label: "Pix", checked: false },
   { id: 3, label: "Dinheiro", checked: false },
