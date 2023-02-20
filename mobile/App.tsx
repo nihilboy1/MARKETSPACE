@@ -1,11 +1,12 @@
 import { Loading } from "@components/Loading";
+import { AuthContextProvider } from "@contexts/AuthContext";
 import {
   Karla_400Regular,
   Karla_700Bold,
   useFonts,
 } from "@expo-google-fonts/karla";
 import { Routes } from "@routes/index";
-import { Box, NativeBaseProvider } from "native-base";
+import { NativeBaseProvider } from "native-base";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { THEME } from "./src/theme/theme";
@@ -20,9 +21,9 @@ export default function App() {
           barStyle="dark-content"
           translucent
         />
-        <Box flex={1} bg="white">
+        <AuthContextProvider>
           {fontsLoaded ? <Routes /> : <Loading />}
-        </Box>
+        </AuthContextProvider>
       </NativeBaseProvider>
     </GestureHandlerRootView>
   );

@@ -5,7 +5,9 @@ import { Input } from "@components/Input";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useNavigation } from "@react-navigation/native";
 import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
-import { Box, Center, ScrollView, Text, VStack } from "native-base";
+import { api } from "@services/api";
+import { AppError } from "@utils/AppError";
+import { Box, Center, ScrollView, Text, VStack, useToast } from "native-base";
 import { Eye, EyeClosed, PencilSimpleLine } from "phosphor-react-native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -46,6 +48,7 @@ const signUpValidationSchema = yup.object({
 });
 
 export function SignUp() {
+  const toast = useToast();
   const {
     control,
     handleSubmit,
@@ -73,14 +76,26 @@ export function SignUp() {
     Keyboard.dismiss();
   }
 
-  function handleSignUp({
-    name,
-    email,
-    whatsApp,
-    password,
-    passwordConfirmation,
-  }: FormData) {
-    console.log(name, email, whatsApp, password, passwordConfirmation);
+  async function handleSignUp({ name, email, whatsApp, password }: FormData) {
+    try {
+      const res = await api.post("/users/", {
+        avatar: "",
+        name,
+        email,
+        tel: whatsApp,
+        password,
+      });
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possivel criar a conta. Tente novamente mais tarde :/";
+      toast.show({
+        title: title,
+        placement: "top",
+        bgColor: "red.400",
+      });
+    }
   }
 
   function moveToLogin() {

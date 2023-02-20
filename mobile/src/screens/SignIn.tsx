@@ -7,6 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@components/Button";
+import { useAuthContext } from "@hooks/useAuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 import {
@@ -27,6 +28,7 @@ type FormData = {
 export function SignIn() {
   const { navigate } = useNavigation<AuthNavigatorRoutesProps>();
   const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const { signIn } = useAuthContext();
 
   const handleClick = () => {
     setPasswordVisibility(!passwordVisibility);
@@ -34,6 +36,10 @@ export function SignIn() {
 
   function handleDismiss() {
     Keyboard.dismiss();
+  }
+
+  function handleSignIn({ email, password }: FormData) {
+    signIn(email, password);
   }
 
   function moveToCreateAccount() {
@@ -44,7 +50,12 @@ export function SignIn() {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>();
+  } = useForm<FormData>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   return (
     <TouchableWithoutFeedback
@@ -76,6 +87,7 @@ export function SignIn() {
               </Text>
               <Controller
                 control={control}
+                rules={{ required: "Informe um e-mail" }}
                 name="email"
                 render={({ field: { onChange } }) => (
                   <Input
@@ -89,6 +101,7 @@ export function SignIn() {
               />
               <Controller
                 control={control}
+                rules={{ required: "Informe a senha" }}
                 name="password"
                 render={({ field: { onChange } }) => (
                   <Input
@@ -114,7 +127,12 @@ export function SignIn() {
                 )}
               />
 
-              <Button title="Entrar" variant="solid" w="full" />
+              <Button
+                title="Entrar"
+                variant="solid"
+                w="full"
+                onPress={handleSubmit(handleSignIn)}
+              />
             </Center>
           </VStack>
           <VStack flex={1}>
