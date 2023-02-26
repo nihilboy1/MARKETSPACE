@@ -1,6 +1,6 @@
 import LogoSvg from "@assets/logo-marketspace.svg";
 import { Input } from "@components/Input";
-import { Center, Text, VStack } from "native-base";
+import { Center, Text, VStack, useToast } from "native-base";
 import { Eye, EyeClosed } from "phosphor-react-native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -10,6 +10,7 @@ import { Button } from "@components/Button";
 import { useAuthContext } from "@hooks/useAuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
+import { AppError } from "@utils/AppError";
 import {
   Keyboard,
   TouchableOpacity,
@@ -27,8 +28,11 @@ type FormData = {
 
 export function SignIn() {
   const { navigate } = useNavigation<AuthNavigatorRoutesProps>();
-  const [passwordVisibility, setPasswordVisibility] = useState(false);
   const { signIn } = useAuthContext();
+  const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const toast = useToast();
 
   const handleClick = () => {
     setPasswordVisibility(!passwordVisibility);
@@ -38,8 +42,24 @@ export function SignIn() {
     Keyboard.dismiss();
   }
 
-  function handleSignIn({ email, password }: FormData) {
-    signIn(email, password);
+  async function handleSignIn({ email, password }: FormData) {
+    try {
+      setIsLoading(true);
+      await signIn(email, password);
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+
+      const title = isAppError
+        ? error.message
+        : "Não foi possível logar. Tente mais tarde :/";
+
+      setIsLoading(false);
+      toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.400",
+      });
+    }
   }
 
   function moveToCreateAccount() {
@@ -109,7 +129,7 @@ export function SignIn() {
                       <TouchableOpacity
                         hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
                         onPress={handleClick}
-                        style={{ marginRight: 10 }}
+                        style={{ marginHorizontal: 10 }}
                       >
                         {passwordVisibility ? (
                           <Eye color={EYECOLOR} />
@@ -131,6 +151,7 @@ export function SignIn() {
                 title="Entrar"
                 variant="solid"
                 w="full"
+                isLoading={isLoading}
                 onPress={handleSubmit(handleSignIn)}
               />
             </Center>

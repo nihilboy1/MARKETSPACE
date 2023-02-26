@@ -7,6 +7,7 @@ import {
   Box,
   FlatList,
   HStack,
+  Image,
   Modal,
   ScrollView,
   Text,
@@ -27,6 +28,7 @@ import {
 import { useState } from "react";
 
 import { ConditionRadio } from "@components/ConditionRadio";
+import { useAuthContext } from "@hooks/useAuthContext";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import {
   Keyboard,
@@ -61,6 +63,7 @@ export const paymentOptionsDATA = [
 export function Home() {
   const { navigate } = useNavigation<AppNavigatorRoutesProps>();
   const { sizes, colors } = useTheme();
+  const { user } = useAuthContext();
 
   const iconsSizes = sizes[6];
   const containerPadding = sizes[8];
@@ -124,11 +127,15 @@ export function Home() {
       >
         <HStack justifyContent="space-between">
           <HStack alignItems="center">
-            <DefaultAvatar width={avatarSize} height={avatarSize} />
+            {user.avatar ? (
+              <Image alt="Foto do usuário" source={{ uri: "" }} size={16} />
+            ) : (
+              <DefaultAvatar width={avatarSize} height={avatarSize} />
+            )}
             <VStack ml="2">
               <Text fontSize={16}>Boas vindas,</Text>
               <Text fontFamily="heading" fontSize={16}>
-                Samuel!
+                {user.name}!
               </Text>
             </VStack>
           </HStack>

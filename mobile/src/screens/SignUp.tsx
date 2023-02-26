@@ -1,13 +1,27 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
 import LogoSvg from "@assets/logo-marketspace-mini.svg";
+
 import { Button } from "@components/Button";
+
 import { Input } from "@components/Input";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useAuthContext } from "@hooks/useAuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 import { api } from "@services/api";
 import { AppError } from "@utils/AppError";
-import { Box, Center, ScrollView, Text, VStack, useToast } from "native-base";
+import * as FileSystem from "expo-file-system";
+import * as ImagePicker from "expo-image-picker";
+import {
+  Box,
+  Center,
+  Image,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
+  useToast,
+} from "native-base";
 import { Eye, EyeClosed, PencilSimpleLine } from "phosphor-react-native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -65,8 +79,60 @@ export function SignUp() {
   });
 
   const { navigate } = useNavigation<AuthNavigatorRoutesProps>();
+  const { signIn } = useAuthContext();
 
   const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const [userPhotoFile, setUserPhotoFile] = useState<any>();
+  const [userPhoto, setUserPhoto] = useState("");
+  const [photoIsLoading, setPhotoIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleUserPhotoSelect() {
+    try {
+      setPhotoIsLoading(true);
+      const selectedPhoto = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.7,
+        aspect: [4, 4],
+        allowsEditing: true,
+      });
+
+      if (selectedPhoto.canceled) {
+        return;
+      }
+
+      const URI = selectedPhoto.assets[0].uri
+        ? selectedPhoto.assets[0].uri
+        : null;
+
+      if (URI) {
+        const photoInfos = await FileSystem.getInfoAsync(URI);
+        if (photoInfos.size) {
+          if (photoInfos.size / 1024 / 1024 > 5) {
+            return toast.show({
+              title: "A imagem selecionada deve ter no máximo 5MB",
+              bgColor: "red.400",
+              placement: "top",
+            });
+          }
+        }
+        const fileType = selectedPhoto.assets[0].type;
+        const fileExtension = URI.split(".").pop();
+        const userAvatarFile = {
+          name: `foto_do_usuario.${fileExtension}`.toLowerCase(),
+          uri: URI,
+          type: `${fileType}/${fileExtension}`,
+        } as any;
+
+        setUserPhotoFile(userAvatarFile);
+        setUserPhoto(URI);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setPhotoIsLoading(false);
+    }
+  }
 
   const handleSetPasswordVisibility = () => {
     setPasswordVisibility(!passwordVisibility);
@@ -78,14 +144,22 @@ export function SignUp() {
 
   async function handleSignUp({ name, email, whatsApp, password }: FormData) {
     try {
-      const res = await api.post("/users/", {
-        avatar: "",
-        name,
-        email,
-        tel: whatsApp,
-        password,
+      setIsLoading(true);
+      const newUserFormData = new FormData();
+      newUserFormData.append("name", name);
+      newUserFormData.append("email", email);
+      newUserFormData.append("tel", whatsApp);
+      newUserFormData.append("password", password);
+      newUserFormData.append("avatar", userPhotoFile);
+
+      await api.post("/users/", newUserFormData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+      await signIn(email, password);
     } catch (error) {
+      setIsLoading(false);
       const isAppError = error instanceof AppError;
       const title = isAppError
         ? error.message
@@ -127,19 +201,35 @@ export function SignUp() {
               </Text>
             </Center>
             <Center mt="5">
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleUserPhotoSelect}
+                disabled={photoIsLoading}
+              >
+                {photoIsLoading ? (
+                  <Center width={24} height={24}>
+                    <Spinner color="blue.700" />
+                  </Center>
+                ) : userPhoto ? (
+                  <Image
+                    alt="Foto do usuário"
+                    size={24}
+                    borderRadius="full"
+                    source={{ uri: userPhoto }}
+                  />
+                ) : (
+                  <DefaultAvatar />
+                )}
                 <Box
                   p="2"
                   position="absolute"
+                  borderRadius="full"
                   right="0"
                   bottom="0"
                   zIndex="1"
-                  borderRadius="16"
                   bgColor="blue.400"
                 >
                   <PencilSimpleLine color="white" size={18} />
                 </Box>
-                <DefaultAvatar />
               </TouchableOpacity>
             </Center>
             <Center p="8">
@@ -187,7 +277,7 @@ export function SignUp() {
                       <TouchableOpacity
                         hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
                         onPress={handleSetPasswordVisibility}
-                        style={{ marginRight: 10 }}
+                        style={{ marginHorizontal: 10 }}
                       >
                         {passwordVisibility ? (
                           <Eye color={EYECOLOR} />
@@ -213,7 +303,7 @@ export function SignUp() {
                       <TouchableOpacity
                         hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
                         onPress={handleSetPasswordVisibility}
-                        style={{ marginRight: 10 }}
+                        style={{ marginHorizontal: 10 }}
                       >
                         {passwordVisibility ? (
                           <Eye color={EYECOLOR} />
@@ -234,9 +324,10 @@ export function SignUp() {
               />
 
               <Button
-                title="Criar"
+                title="Criar e acessar"
                 variant="link"
                 w="full"
+                isLoading={isLoading}
                 onPress={handleSubmit(handleSignUp)}
               />
             </Center>

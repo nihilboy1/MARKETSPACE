@@ -1,12 +1,11 @@
-import { HStack, Text } from "native-base";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Loading } from "@components/Loading";
+import { useAuthContext } from "@hooks/useAuthContext";
+import { useEffect } from "react";
 
 export function SignOutEmptyScreen() {
-  return (
-    <SafeAreaView>
-      <HStack>
-        <Text>SignOutEmptyScreen</Text>
-      </HStack>
-    </SafeAreaView>
-  );
+  const { signOut } = useAuthContext();
+  useEffect(() => {
+    signOut();
+  }, []);
+  return <Loading />;
 }
