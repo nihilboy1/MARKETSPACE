@@ -7,14 +7,14 @@ import { Box } from "native-base";
 import { AppRoutes } from "./app.routes";
 
 export function Routes() {
-  const { user, isLoadingUserData } = useAuthContext();
+  const { userState, isLoadingUserData } = useAuthContext();
   if (isLoadingUserData) {
     return <Loading />;
   }
   return (
     <Box flex={1} bg="white">
       <NavigationContainer>
-        {user.id ? <AppRoutes /> : <AuthRoutes />}
+        {userState.id ? <AppRoutes /> : <AuthRoutes />}
       </NavigationContainer>
     </Box>
   );

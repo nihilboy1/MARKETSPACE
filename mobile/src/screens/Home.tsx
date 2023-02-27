@@ -1,4 +1,3 @@
-import DefaultAvatar from "@assets/default-avatar.svg";
 import { Button } from "@components/Button";
 import { Input } from "@components/Input";
 import { MiniCardAd } from "@components/MiniCardAd";
@@ -30,6 +29,7 @@ import { useState } from "react";
 import { ConditionRadio } from "@components/ConditionRadio";
 import { useAuthContext } from "@hooks/useAuthContext";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
+import { api } from "@services/api";
 import {
   Keyboard,
   TouchableOpacity,
@@ -63,7 +63,7 @@ export const paymentOptionsDATA = [
 export function Home() {
   const { navigate } = useNavigation<AppNavigatorRoutesProps>();
   const { sizes, colors } = useTheme();
-  const { user } = useAuthContext();
+  const { userState } = useAuthContext();
 
   const iconsSizes = sizes[6];
   const containerPadding = sizes[8];
@@ -127,15 +127,25 @@ export function Home() {
       >
         <HStack justifyContent="space-between">
           <HStack alignItems="center">
-            {user.avatar ? (
-              <Image alt="Foto do usuário" source={{ uri: "" }} size={16} />
-            ) : (
-              <DefaultAvatar width={avatarSize} height={avatarSize} />
-            )}
+            <Box
+              borderWidth="3"
+              borderColor="blue.400"
+              overflow="hidden"
+              borderRadius="full"
+            >
+              <Image
+                alt="Foto do usuário"
+                source={{
+                  uri: `${api.defaults.baseURL}/images/${userState.avatar}`,
+                }}
+                size={14}
+              />
+            </Box>
+
             <VStack ml="2">
               <Text fontSize={16}>Boas vindas,</Text>
               <Text fontFamily="heading" fontSize={16}>
-                {user.name}!
+                {userState.name}!
               </Text>
             </VStack>
           </HStack>
