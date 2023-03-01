@@ -1,32 +1,30 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
 import miniCardImage from "@assets/product-image.png";
-import { PostedProduct } from "@screens/Home";
 import { HStack, Image, Text, VStack, useTheme } from "native-base";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, TouchableOpacityProps } from "react-native";
 
-type MiniCardAdProps = {
-  productName: string;
-  price: string;
-  images: string[];
-  condition: "new" | "used";
-  moveTo: (data: PostedProduct) => void;
-  mine?: boolean;
+type Props = TouchableOpacityProps & {
+  name: string;
+  price: number;
+  thumb: string;
+  condition: boolean;
+  mini: boolean;
 };
 
 export function MiniCardAd({
-  productName,
+  name,
   price,
   condition,
-  images,
-  moveTo,
-  mine,
-}: MiniCardAdProps) {
+  thumb,
+  mini,
+  ...rest
+}: Props) {
   const { sizes } = useTheme();
   const avatarSize = sizes[8];
 
   return (
     <TouchableOpacity
-      onPress={() => moveTo({ condition, images, price, productName })}
+      {...rest}
       style={{
         flex: 1,
         paddingHorizontal: 6,
@@ -53,23 +51,23 @@ export function MiniCardAd({
           <DefaultAvatar
             width={avatarSize}
             height={avatarSize}
-            opacity={mine ? 0 : 1}
+            opacity={mini ? 0 : 1}
           />
           <Text
             p="1"
             px="3"
-            bg={condition == "new" ? "blue.700" : "gray.500"}
+            bg={condition ? "blue.700" : "gray.500"}
             fontSize="12"
             color="white"
             borderRadius="16"
             fontWeight="bold"
           >
-            {condition == "new" ? "NOVO" : "USADO"}
+            {condition ? "NOVO" : "USADO"}
           </Text>
         </HStack>
         <VStack>
           <Text fontSize="18" color="gray.500" mt="1">
-            {productName}
+            {name}
           </Text>
           <HStack alignItems="center" mt="-1">
             <Text pt="2" fontSize="16" fontWeight="bold" mr="1">

@@ -4,8 +4,8 @@ import { XCircle } from "phosphor-react-native";
 import { TouchableOpacity } from "react-native";
 
 type ConditionRadioProps = IHStackProps & {
-  radioValue: "new" | "used";
-  setRadioValue: (value: "new" | "used") => void;
+  radioValue: boolean;
+  setRadioValue: (value: boolean) => void;
 };
 
 export function ConditionRadio({
@@ -18,7 +18,7 @@ export function ConditionRadio({
   return (
     <HStack {...rest}>
       <TouchableOpacity
-        onPress={() => setRadioValue("new")}
+        onPress={() => setRadioValue(true)}
         style={{
           padding: 8,
           paddingHorizontal: 14,
@@ -26,7 +26,7 @@ export function ConditionRadio({
           minWidth: 60,
           marginRight: 15,
           backgroundColor: `${
-            radioValue === "new" ? colors.blue[400] : colors.gray[300]
+            radioValue ? colors.blue[400] : colors.gray[300]
           }`,
         }}
       >
@@ -35,11 +35,11 @@ export function ConditionRadio({
             fontFamily="heading"
             textAlign="center"
             pb="0.5"
-            color={`${radioValue === "new" ? "white" : colors.gray[500]}`}
+            color={`${radioValue ? "white" : colors.gray[500]}`}
           >
             Produto novo
           </Text>
-          {radioValue === "new" && (
+          {radioValue && (
             <XCircle
               size={18}
               color="white"
@@ -50,7 +50,7 @@ export function ConditionRadio({
         </HStack>
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => setRadioValue("used")}
+        onPress={() => setRadioValue(false)}
         style={{
           padding: 8,
           paddingHorizontal: 14,
@@ -58,7 +58,7 @@ export function ConditionRadio({
           minWidth: 60,
           marginRight: 15,
           backgroundColor: `${
-            radioValue === "used" ? colors.blue[400] : colors.gray[300]
+            !radioValue ? colors.blue[400] : colors.gray[300]
           }`,
         }}
       >
@@ -67,11 +67,11 @@ export function ConditionRadio({
             fontFamily="heading"
             textAlign="center"
             pb="0.5"
-            color={`${radioValue === "used" ? "white" : colors.gray[500]}`}
+            color={`${!radioValue ? "white" : colors.gray[500]}`}
           >
             Produto usado
           </Text>
-          {radioValue === "used" && (
+          {!radioValue && (
             <XCircle
               size={18}
               color="white"

@@ -78,6 +78,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       setIsLoadingUserData(true);
       const loggedInUser = await localGetUser();
       const token = await localGetToken();
+      console.log(token);
       if (loggedInUser && token) {
         userAndTokenUpdate(loggedInUser, token);
       }
