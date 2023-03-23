@@ -3,7 +3,7 @@ type paymentMethods = {
   name: string;
 };
 
-type productImages = {
+export type productImages = {
   path: string;
   id: string;
 };
@@ -15,7 +15,7 @@ export type ProductDTO = {
   is_new: boolean;
   accept_trade: boolean;
   product_images: productImages[];
-  payment_methods: paymentMethods;
+  payment_methods: paymentMethods[];
   user: {
     avatar: string;
   };

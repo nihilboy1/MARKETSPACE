@@ -21,9 +21,10 @@ export function Button({ title, variant, ...rest }: ButtonProps) {
     >
       <Text
         color={`${
-          variant !== "link" && variant !== "solid" ? "gray.800" : "white"
+          variant !== "link" && variant !== "solid" ? "gray.500" : "white"
         }`}
         fontFamily="heading"
+        fontSize="15"
       >
         {title}
       </Text>

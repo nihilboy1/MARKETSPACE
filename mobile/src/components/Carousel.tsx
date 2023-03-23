@@ -1,11 +1,12 @@
 import productImage from "@assets/product-image.png";
-import { Box, HStack, Image } from "native-base";
+import { productImages } from "@dtos/ProductDTO";
+import { Box, HStack, Image, VStack } from "native-base";
 import { useState } from "react";
 import { Dimensions } from "react-native";
 import RNRCCarousel from "react-native-reanimated-carousel";
 
 type CarouselProps = {
-  productImages: string[];
+  productImages: productImages[];
 };
 
 export function Carousel({ productImages }: CarouselProps) {
@@ -14,7 +15,7 @@ export function Carousel({ productImages }: CarouselProps) {
   const indexArray = productImages.map((image, index) => index);
 
   return (
-    <HStack h="70" alignItems="flex-end" shadow={4}>
+    <VStack h="70" alignItems="center" justifyContent="flex-end" shadow={4}>
       <RNRCCarousel
         loop
         width={width}
@@ -34,17 +35,18 @@ export function Carousel({ productImages }: CarouselProps) {
         )}
       />
       <HStack
-        position="absolute"
         w="full"
+        justifyContent="space-around"
+        position="absolute"
         pt="2"
         pb="1"
         px="1.5"
-        justifyContent="space-around"
       >
         {indexArray.map((index) => (
           <Box
             shadow={2}
-            minW="31"
+            maxW="31"
+            minW="16"
             borderRadius="8"
             h="1"
             key={index}
@@ -53,6 +55,6 @@ export function Carousel({ productImages }: CarouselProps) {
           />
         ))}
       </HStack>
-    </HStack>
+    </VStack>
   );
 }

@@ -1,6 +1,7 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
+import { Button } from "@components/Button";
 import { Carousel } from "@components/Carousel";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { Box, HStack, ScrollView, Text, VStack, useTheme } from "native-base";
 import {
   ArrowLeft,
@@ -9,48 +10,44 @@ import {
   CreditCard,
   Money,
   QrCode,
-  WhatsappLogo,
+  Tag,
 } from "phosphor-react-native";
-
-import { Button } from "@components/Button";
-import { ProductDTO } from "@dtos/ProductDTO";
-import { Linking, TouchableOpacity } from "react-native";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { TouchableWithoutFeedback } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type AdDetailRouteParams = {
-  data: ProductDTO;
-};
-
-export function ProductDetails() {
-  const { colors, sizes } = useTheme();
+export function AdPreview() {
+  const { colors, fonts, sizes } = useTheme();
+  const containerPadding = sizes[8];
   const avatarSize = sizes[8];
 
-  async function linkToSellerWhatsapp() {
-    await Linking.openURL("https://wa.me/5584987055995");
-  }
-
-  const route = useRoute();
-  const { goBack } = useNavigation();
-
-  const { data } = route.params as AdDetailRouteParams;
+  const { navigate, goBack } = useNavigation();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[200] }}>
-      <HStack p="4" mt="1" justifyContent="space-between">
-        <TouchableOpacity
-          onPress={goBack}
-          hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
-        >
-          <ArrowLeft />
-        </TouchableOpacity>
-        <Text fontSize="16" fontWeight="bold">
-          Detalhes do produto
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.blue[400],
+        paddingTop: containerPadding,
+      }}
+    >
+      <VStack alignItems="center" w="full">
+        <Text fontFamily="heading" color={colors.white}>
+          Pré visualização do anúncio
         </Text>
-        <ArrowLeft style={{ opacity: 0 }} />
-      </HStack>
-      <Carousel productImages={data.product_images} />
-      <ScrollView padding="8" flex="1">
+        <Text mb="5" color={colors.white}>
+          É assim que seu produto vai aparecer!
+        </Text>
+        <Carousel
+          productImages={[
+            { id: "52", path: "aa" },
+            { id: "52", path: "aa" },
+            { id: "52", path: "aa" },
+            { id: "52", path: "aa" },
+            { id: "52", path: "aa" },
+          ]}
+        />
+      </VStack>
+      <ScrollView p="8" flex="1" bgColor="white">
         <HStack alignItems="center">
           <DefaultAvatar width={avatarSize} height={avatarSize} />
           <Text ml="3" fontSize="16" color="gray.700">
@@ -71,12 +68,12 @@ export function ProductDetails() {
             textAlign="center"
             color="gray.600"
           >
-            {data.is_new ? "NOVO" : "USADO"}
+            NOVO
           </Text>
         </Box>
         <HStack alignItems="center" justifyContent="space-between" my="4">
           <Text fontSize="22" fontWeight="bold" color="gray.700">
-            {data.name}
+            Bike
           </Text>
           <HStack alignItems="center">
             <Text
@@ -89,7 +86,7 @@ export function ProductDetails() {
               R$
             </Text>
             <Text fontSize="26" fontWeight="bold" color="blue.400">
-              {data.price}
+              450,00
             </Text>
           </HStack>
         </HStack>
@@ -144,31 +141,25 @@ export function ProductDetails() {
         </VStack>
       </ScrollView>
       <HStack bg="white" p="5" justifyContent="space-between">
-        <HStack alignItems="center">
-          <Text
-            fontSize="16"
-            fontWeight="bold"
-            color="blue.400"
-            pt="1.5"
-            pr="1.5"
-          >
-            R$
-          </Text>
-          <Text fontSize="26" fontWeight="bold" color="blue.400">
-            {data.price}
-          </Text>
-        </HStack>
         <Button
-          onPress={() => {
-            linkToSellerWhatsapp();
-          }}
-          title="Entrar em contato"
-          variant="solid"
+          w="48%"
           leftIcon={
             <TouchableWithoutFeedback>
-              <WhatsappLogo weight="fill" color="white" />
+              <ArrowLeft color={colors.gray[500]} />
             </TouchableWithoutFeedback>
           }
+          onPress={goBack}
+          title="Voltar e editar"
+        />
+        <Button
+          w="48%"
+          leftIcon={
+            <TouchableWithoutFeedback>
+              <Tag color="white" />
+            </TouchableWithoutFeedback>
+          }
+          title="Publicar"
+          variant="solid"
         />
       </HStack>
     </SafeAreaView>

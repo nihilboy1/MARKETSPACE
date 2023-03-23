@@ -3,12 +3,11 @@ import {
   HStack,
   Modal,
   ScrollView,
-  Square,
   Text,
   VStack,
   useTheme,
 } from "native-base";
-import { CheckSquare, X } from "phosphor-react-native";
+import { CheckSquare, Square, X } from "phosphor-react-native";
 import { useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { Button } from "./Button";

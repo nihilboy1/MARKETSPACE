@@ -8,13 +8,15 @@ import {
   Barcode,
   CreditCard,
   Money,
+  PencilLine,
+  Power,
   QrCode,
-  WhatsappLogo,
+  Trash,
 } from "phosphor-react-native";
 
 import { Button } from "@components/Button";
 import { ProductDTO } from "@dtos/ProductDTO";
-import { Linking, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -22,18 +24,14 @@ type AdDetailRouteParams = {
   data: ProductDTO;
 };
 
-export function ProductDetails() {
+export function AdDetails() {
   const { colors, sizes } = useTheme();
   const avatarSize = sizes[8];
-
-  async function linkToSellerWhatsapp() {
-    await Linking.openURL("https://wa.me/5584987055995");
-  }
 
   const route = useRoute();
   const { goBack } = useNavigation();
 
-  const { data } = route.params as AdDetailRouteParams;
+  const { id } = route.params as { id: string };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[200] }}>
@@ -44,12 +42,20 @@ export function ProductDetails() {
         >
           <ArrowLeft />
         </TouchableOpacity>
-        <Text fontSize="16" fontWeight="bold">
-          Detalhes do produto
-        </Text>
-        <ArrowLeft style={{ opacity: 0 }} />
+
+        <TouchableOpacity>
+          <PencilLine />
+        </TouchableOpacity>
       </HStack>
-      <Carousel productImages={data.product_images} />
+      <Carousel
+        productImages={[
+          { id: "52", path: "aa" },
+          { id: "52", path: "aa" },
+          { id: "52", path: "aa" },
+          { id: "52", path: "aa" },
+          { id: "52", path: "aa" },
+        ]}
+      />
       <ScrollView padding="8" flex="1">
         <HStack alignItems="center">
           <DefaultAvatar width={avatarSize} height={avatarSize} />
@@ -71,12 +77,12 @@ export function ProductDetails() {
             textAlign="center"
             color="gray.600"
           >
-            {data.is_new ? "NOVO" : "USADO"}
+            {"NOVO"}
           </Text>
         </Box>
         <HStack alignItems="center" justifyContent="space-between" my="4">
           <Text fontSize="22" fontWeight="bold" color="gray.700">
-            {data.name}
+            {"Nome do produto"}
           </Text>
           <HStack alignItems="center">
             <Text
@@ -89,7 +95,7 @@ export function ProductDetails() {
               R$
             </Text>
             <Text fontSize="26" fontWeight="bold" color="blue.400">
-              {data.price}
+              {"99,99"}
             </Text>
           </HStack>
         </HStack>
@@ -143,34 +149,28 @@ export function ProductDetails() {
           </HStack>
         </VStack>
       </ScrollView>
-      <HStack bg="white" p="5" justifyContent="space-between">
-        <HStack alignItems="center">
-          <Text
-            fontSize="16"
-            fontWeight="bold"
-            color="blue.400"
-            pt="1.5"
-            pr="1.5"
-          >
-            R$
-          </Text>
-          <Text fontSize="26" fontWeight="bold" color="blue.400">
-            {data.price}
-          </Text>
-        </HStack>
+      <VStack bg="white" p="5" justifyContent="space-between ">
         <Button
-          onPress={() => {
-            linkToSellerWhatsapp();
-          }}
-          title="Entrar em contato"
-          variant="solid"
+          onPress={() => {}}
+          mb="2"
+          title="Desativar anúncio"
+          variant="link"
           leftIcon={
             <TouchableWithoutFeedback>
-              <WhatsappLogo weight="fill" color="white" />
+              <Power color="white" />
             </TouchableWithoutFeedback>
           }
         />
-      </HStack>
+        <Button
+          onPress={() => {}}
+          title="Excluir anúncio"
+          leftIcon={
+            <TouchableWithoutFeedback>
+              <Trash color={colors.gray[500]} />
+            </TouchableWithoutFeedback>
+          }
+        />
+      </VStack>
     </SafeAreaView>
   );
 }

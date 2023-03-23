@@ -1,7 +1,12 @@
 import { Button } from "@components/Button";
 import { ConditionRadio } from "@components/ConditionRadio";
+import { paymentOptionsDATA } from "@components/HomeFilterModal";
 import { Input } from "@components/Input";
+import * as ImagePicker from "expo-image-picker";
+
 import { useNavigation } from "@react-navigation/native";
+import { AppNavigatorRoutesProps } from "@routes/app.routes";
+import * as FileSystem from "expo-file-system";
 import {
   Box,
   Center,
@@ -10,20 +15,79 @@ import {
   Text,
   VStack,
   useTheme,
+  useToast,
 } from "native-base";
 import { ArrowLeft, CheckSquare, Plus, Square } from "phosphor-react-native";
 import { useState } from "react";
+
 import { TouchableOpacity } from "react-native";
 import { TextInputMask } from "react-native-masked-text";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PostedProduct, paymentOptionsDATA } from "./Home";
 
 export function CreateAd() {
-  const [radioValue, setRadioValue] =
-    useState<PostedProduct["condition"]>("new");
+  const [radioValue, setRadioValue] = useState(true);
+  const toast = useToast();
+
   const [currencyInputValue, setCurrencyInputValue] = useState("");
+  const [userProductPhotoFile, setUserProductPhotoFile] = useState<any>();
+  const [userProductPhoto, setUserProductPhoto] = useState("");
   const [acceptExchange, setAcceptExchange] = useState(false);
+  const [ProductphotoIsLoading, setProductPhotoIsLoading] = useState(false);
+
   const [paymentOptions, setPaymentOptions] = useState(paymentOptionsDATA);
+  const { navigate, goBack } = useNavigation<AppNavigatorRoutesProps>();
+  const { colors, fonts } = useTheme();
+
+  async function handleUserProductPhotoSelect() {
+    try {
+      setProductPhotoIsLoading(true);
+      const selectedProductPhoto = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.7,
+        aspect: [4, 4],
+        allowsEditing: true,
+      });
+
+      if (selectedProductPhoto.canceled) {
+        return;
+      }
+
+      const URI = selectedProductPhoto.assets[0].uri
+        ? selectedProductPhoto.assets[0].uri
+        : null;
+
+      if (URI) {
+        const ProductphotoInfos = await FileSystem.getInfoAsync(URI);
+        if (ProductphotoInfos.size) {
+          if (ProductphotoInfos.size / 1024 / 1024 > 5) {
+            return toast.show({
+              title: "A imagem selecionada deve ter no máximo 5MB",
+              bgColor: "red.400",
+              placement: "top",
+            });
+          }
+        }
+        const fileType = selectedProductPhoto.assets[0].type;
+        const fileExtension = URI.split(".").pop();
+        const userAvatarFile = {
+          name: `foto_do_usuario.${fileExtension}`.toLowerCase(),
+          uri: URI,
+          type: `${fileType}/${fileExtension}`,
+        } as any;
+
+        setUserProductPhotoFile(userAvatarFile);
+        setUserProductPhoto(URI);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setProductPhotoIsLoading(false);
+    }
+  }
+
+  function moveToAdPreview() {
+    navigate("adPreview");
+  }
 
   const handleSetPaymentOptions = (id: number) => {
     const updatedOptions = paymentOptions.map((option, i) => {
@@ -34,9 +98,6 @@ export function CreateAd() {
     });
     setPaymentOptions(updatedOptions);
   };
-
-  const { goBack } = useNavigation();
-  const { colors, fonts } = useTheme();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[200] }}>
@@ -171,7 +232,12 @@ export function CreateAd() {
       </ScrollView>
       <HStack bg="white" p="5" justifyContent="space-between">
         <Button onPress={goBack} title="Cancelar" variant="ghost" w="48%" />
-        <Button title="Avançar" variant="link" w="48%" />
+        <Button
+          onPress={moveToAdPreview}
+          title="Avançar"
+          variant="link"
+          w="48%"
+        />
       </HStack>
     </SafeAreaView>
   );

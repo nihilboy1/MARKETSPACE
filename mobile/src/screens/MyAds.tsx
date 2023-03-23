@@ -1,4 +1,5 @@
 import { MiniCardAd } from "@components/MiniCardAd";
+import { ProductDTO } from "@dtos/ProductDTO";
 import { useNavigation } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { FlatList, HStack, Select, Text, useTheme } from "native-base";
@@ -8,7 +9,6 @@ import { TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FAKEDATA } from "../data/data";
-import { PostedProduct } from "./Home";
 
 export function MyAds() {
   const { navigate } = useNavigation<AppNavigatorRoutesProps>();
@@ -16,12 +16,15 @@ export function MyAds() {
   const [myAdsStateFilter, setMyAdsStateFilter] = useState<
     "todos" | "ativos" | "inativos"
   >("todos");
-  const [postedProducts, setPostedProducts] =
-    useState<PostedProduct[]>(FAKEDATA);
+  const [postedProducts, setPostedProducts] = useState<ProductDTO[]>(FAKEDATA);
   const { colors, sizes } = useTheme();
 
   function moveToCreateAd() {
     navigate("createAd");
+  }
+
+  function moveToAdDetails(id: string) {
+    navigate("adDetails", { id });
   }
   return (
     <SafeAreaView
@@ -68,7 +71,7 @@ export function MyAds() {
       <FlatList
         showsVerticalScrollIndicator={false}
         data={postedProducts}
-        keyExtractor={(item) => item.productName}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={{
           display: "flex",
           justifyContent: "space-between",
@@ -76,13 +79,14 @@ export function MyAds() {
         }}
         renderItem={({ item }) => (
           <MiniCardAd
-            mine
-            key={item.productName}
-            condition={item.condition}
-            images={item.images}
+            mini
+            onPress={() => {
+              moveToAdDetails(item.id);
+            }}
+            condition={item.is_new}
+            thumb={""}
             price={item.price}
-            productName={item.productName}
-            moveTo={() => {}}
+            name={item.name}
           />
         )}
         numColumns={2}
