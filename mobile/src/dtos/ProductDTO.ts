@@ -5,8 +5,9 @@ export type paymentMethodsProps = {
 };
 
 export type productImages = {
-  path: string;
+  uri: string;
   id: string;
+  type: string;
 };
 
 export type ProductDTO = {

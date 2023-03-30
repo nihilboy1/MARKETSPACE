@@ -2,7 +2,7 @@ import { Button } from "@components/Button";
 import LogoSvg from "../assets/logo-marketspace.svg";
 
 import { Input } from "@components/Input";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import {
   Box,
   FlatList,
@@ -11,6 +11,7 @@ import {
   Text,
   VStack,
   useTheme,
+  useToast,
 } from "native-base";
 import {
   ArrowRight,
@@ -20,33 +21,64 @@ import {
   Sliders,
   TagSimple,
 } from "phosphor-react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { HomeFilterModal } from "@components/HomeFilterModal";
 import { MiniCardAd } from "@components/MiniCardAd";
 import { SkeletonCard } from "@components/SkeletonCard";
-import { ProductDTO } from "@dtos/ProductDTO";
+import { ProductDTO, paymentMethodsProps } from "@dtos/ProductDTO";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthContext } from "@hooks/useAuthContext";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { api } from "@services/api";
+import { AppError } from "@utils/AppError";
 import { ErrorToast } from "@utils/ErrorToast";
+import { Controller, useForm } from "react-hook-form";
 import {
   Keyboard,
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as yup from "yup";
+
+export const paymentMethodsData = [
+  { id: 1, label: "boleto", checked: false },
+  { id: 2, label: "pix", checked: false },
+  { id: 3, label: "cash", checked: false },
+  { id: 4, label: "card", checked: false },
+  { id: 5, label: "deposit", checked: false },
+];
+const signInSchema = yup.object({
+  search: yup.string(),
+});
+
+export type FormDataProps = {
+  search: string;
+};
 
 export function Home() {
   const [products, setProducts] = useState<ProductDTO[]>([]);
+  const [paymentOptionsCheckBox, setPaymentOptionsCheckBox] =
+    useState<paymentMethodsProps[]>(paymentMethodsData);
+  const [filtersAreApplying, setFiltersAreApplying] = useState(false);
   const [openFilterModal, setOpenFilterModal] = useState(false);
-  const [filterName, setFilterName] = useState("");
-  const [isTradable, setIsTradable] = useState(true);
-  const [isNew, setIsNew] = useState(true);
-  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [numerOfAds, setNumerOfAds] = useState(0);
+  const [acceptTrade, setAcceptTrade] = useState<boolean | undefined>(
+    undefined
+  );
+  const [isNew, setIsNew] = useState<boolean | undefined>(undefined);
+  const [paymentMethods, setPaymentMethods] = useState([
+    "cash",
+    "pix",
+    "boleto",
+    "card",
+    "deposit",
+  ]);
+  const toast = useToast();
 
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const { navigate } = useNavigation<AppNavigatorRoutesProps>();
@@ -54,6 +86,7 @@ export function Home() {
   const { userState } = useAuthContext();
 
   const iconsSizes = sizes[6];
+  2;
   const containerPadding = sizes[8];
 
   function handleDismiss() {
@@ -72,25 +105,75 @@ export function Home() {
     navigate("myAds");
   }
 
-  async function handleResetFilters() {
-    try {
-      setFilterName("");
-      setIsNew(true);
-      setIsTradable(true);
-      setPaymentMethods([]);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormDataProps>({
+    defaultValues: {
+      search: "",
+    },
+    resolver: yupResolver(signInSchema),
+  });
 
-      await fetchProducts();
+  const handleApplyFilters = async ({ search }: FormDataProps) => {
+    setOpenFilterModal(false);
+    setFiltersAreApplying(true);
+    try {
+      let paymentMethodsQuery = "";
+      paymentMethods.forEach((item) => {
+        paymentMethodsQuery = paymentMethodsQuery + `&payment_methods=${item}`;
+      });
+
+      setFilterLoading(true);
+      const productsData = await api.get(
+        `/products/?is_new=${isNew}&accept_trade=${acceptTrade}${paymentMethodsQuery}${
+          search.length > 0 && `&query=${search}`
+        }`
+      );
+      setProducts(productsData.data);
     } catch (error) {
-      ErrorToast(error);
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível receber os produtos. Tente Novamente!";
+
+      if (isAppError) {
+        toast.show({
+          title,
+          placement: "top",
+          bgColor: "red.500",
+        });
+      }
+    } finally {
+      setFilterLoading(false);
     }
+  };
+
+  const handleSetPaymentOptions = () => {
+    const updatedOptions = paymentOptionsCheckBox.map((option, i) => {
+      return { ...option, checked: false };
+    });
+    setPaymentOptionsCheckBox(updatedOptions);
+  };
+
+  async function handleFiltersReset() {
+    setPaymentMethods(["cash", "pix", "boleto", "card", "deposit"]);
+    handleSetPaymentOptions();
+    setAcceptTrade(undefined);
+    setIsNew(undefined);
+    const generalProductsData = await api.get("/products");
+    setProducts(generalProductsData.data);
+    setFiltersAreApplying(false);
   }
 
   async function fetchProducts() {
     try {
       setIsLoadingProducts(true);
-      const { data } = await api.get("/users/products");
-      console.log(data);
-      setProducts(data);
+      const productsData = await api.get(`/users/products`);
+      const generalProductsData = await api.get("/products");
+      setProducts(generalProductsData.data);
+      setNumerOfAds(productsData.data.length);
     } catch (error) {
       ErrorToast(error);
     } finally {
@@ -99,9 +182,11 @@ export function Home() {
     }
   }
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, [])
+  );
 
   return (
     <TouchableWithoutFeedback
@@ -175,7 +260,7 @@ export function Home() {
                 />
                 <VStack ml="4">
                   <Text fontSize="lg" fontFamily="heading" color="gray.500">
-                    4
+                    {numerOfAds}
                   </Text>
                   <Text fontSize="sm" color="gray.500">
                     anúncios ativos
@@ -201,37 +286,50 @@ export function Home() {
             Seus produtos anunciados para venda
           </Text>
           <HStack alignItems="center">
-            <Input
-              placeholder="Buscar Anúncio"
-              rightElement={
-                <HStack
-                  alignItems="center"
-                  width="20"
-                  justifyContent="space-between"
-                  marginRight="2"
-                >
-                  <TouchableOpacity
-                    hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
-                  >
-                    <MagnifyingGlass
-                      weight="bold"
-                      size={iconsSizes}
-                      color={`${colors.gray[500]}`}
-                    />
-                  </TouchableOpacity>
-                  <DotsThreeVertical color={`${colors.gray[500]}`} />
-                  <TouchableOpacity
-                    onPress={() => setOpenFilterModal(true)}
-                    hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
-                  >
-                    <Sliders
-                      size={iconsSizes + 2}
-                      weight="bold"
-                      color={`${colors.gray[500]}`}
-                    />
-                  </TouchableOpacity>
-                </HStack>
-              }
+            <Controller
+              control={control}
+              name="search"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  placeholder="Buscar Anúncio"
+                  onChangeText={onChange}
+                  value={value}
+                  rightElement={
+                    <HStack
+                      alignItems="center"
+                      width="20"
+                      justifyContent="space-between"
+                      marginRight="2"
+                    >
+                      <TouchableOpacity
+                        onPress={handleSubmit(handleApplyFilters)}
+                        hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
+                      >
+                        <MagnifyingGlass
+                          weight="bold"
+                          size={iconsSizes}
+                          color={`${colors.gray[500]}`}
+                        />
+                      </TouchableOpacity>
+                      <DotsThreeVertical color={`${colors.gray[500]}`} />
+                      <TouchableOpacity
+                        onPress={() => setOpenFilterModal(true)}
+                        hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
+                      >
+                        <Sliders
+                          size={iconsSizes + 2}
+                          weight="bold"
+                          color={
+                            filtersAreApplying
+                              ? `${colors.blue[500]}`
+                              : `${colors.gray[500]}`
+                          }
+                        />
+                      </TouchableOpacity>
+                    </HStack>
+                  }
+                />
+              )}
             />
           </HStack>
         </VStack>
@@ -274,6 +372,14 @@ export function Home() {
         <HomeFilterModal
           openFilterModal={openFilterModal}
           setOpenFilterModal={setOpenFilterModal}
+          applyFilters={handleSubmit(handleApplyFilters)}
+          isNew={isNew}
+          setIsNew={setIsNew}
+          acceptTrade={acceptTrade}
+          setAcceptTrade={setAcceptTrade}
+          resetFilters={handleFiltersReset}
+          setPaymentOptionsCheckBox={setPaymentOptionsCheckBox}
+          paymentOptionsCheckBox={paymentOptionsCheckBox}
         />
       </SafeAreaView>
     </TouchableWithoutFeedback>

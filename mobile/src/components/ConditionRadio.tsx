@@ -4,13 +4,13 @@ import { XCircle } from "phosphor-react-native";
 import { TouchableOpacity } from "react-native";
 
 type ConditionRadioProps = IHStackProps & {
-  radioValue: boolean;
-  setRadioValue: (value: boolean) => void;
+  isNew: boolean | undefined;
+  setIsNew: (value: boolean | undefined) => void;
 };
 
 export function ConditionRadio({
-  radioValue,
-  setRadioValue,
+  isNew,
+  setIsNew,
   ...rest
 }: ConditionRadioProps) {
   const { colors } = useTheme();
@@ -18,16 +18,14 @@ export function ConditionRadio({
   return (
     <HStack {...rest}>
       <TouchableOpacity
-        onPress={() => setRadioValue(true)}
+        onPress={() => setIsNew(undefined)}
         style={{
           padding: 8,
           paddingHorizontal: 14,
           borderRadius: 22,
           minWidth: 60,
           marginRight: 15,
-          backgroundColor: `${
-            radioValue ? colors.blue[400] : colors.gray[300]
-          }`,
+          backgroundColor: `${isNew === undefined && colors.gray[200]}`,
         }}
       >
         <HStack alignItems="center">
@@ -35,14 +33,14 @@ export function ConditionRadio({
             fontFamily="heading"
             textAlign="center"
             pb="0.5"
-            color={`${radioValue ? "white" : colors.gray[500]}`}
+            color={`${isNew === undefined && colors.gray[500]}`}
           >
-            Produto novo
+            Não definido
           </Text>
-          {radioValue && (
+          {isNew == undefined && (
             <XCircle
               size={18}
-              color="white"
+              color={colors.gray[400]}
               weight="fill"
               style={{ marginLeft: 6 }}
             />
@@ -50,7 +48,7 @@ export function ConditionRadio({
         </HStack>
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => setRadioValue(false)}
+        onPress={() => setIsNew(true)}
         style={{
           padding: 8,
           paddingHorizontal: 14,
@@ -58,7 +56,11 @@ export function ConditionRadio({
           minWidth: 60,
           marginRight: 15,
           backgroundColor: `${
-            !radioValue ? colors.blue[400] : colors.gray[300]
+            isNew === undefined
+              ? colors.gray[200]
+              : isNew
+              ? colors.blue[400]
+              : colors.gray[300]
           }`,
         }}
       >
@@ -67,11 +69,61 @@ export function ConditionRadio({
             fontFamily="heading"
             textAlign="center"
             pb="0.5"
-            color={`${!radioValue ? "white" : colors.gray[500]}`}
+            color={`${
+              isNew === undefined
+                ? colors.gray[500]
+                : isNew
+                ? "gray.300"
+                : "gray.500"
+            }`}
           >
-            Produto usado
+            Novo
           </Text>
-          {!radioValue && (
+          {isNew === undefined
+            ? ""
+            : isNew && (
+                <XCircle
+                  size={18}
+                  color="white"
+                  weight="fill"
+                  style={{ marginLeft: 6 }}
+                />
+              )}
+        </HStack>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => setIsNew(false)}
+        style={{
+          padding: 8,
+          paddingHorizontal: 14,
+          borderRadius: 22,
+          minWidth: 60,
+          marginRight: 15,
+          backgroundColor: `${
+            isNew === undefined
+              ? colors.gray[200]
+              : !isNew
+              ? colors.blue[400]
+              : colors.gray[300]
+          }`,
+        }}
+      >
+        <HStack alignItems="center">
+          <Text
+            fontFamily="heading"
+            textAlign="center"
+            pb="0.5"
+            color={`${
+              isNew === undefined
+                ? colors.gray[500]
+                : !isNew
+                ? "gray.300"
+                : "gray.500"
+            }`}
+          >
+            Usado
+          </Text>
+          {!isNew && isNew !== undefined && (
             <XCircle
               size={18}
               color="white"

@@ -1,4 +1,3 @@
-import productImage from "@assets/product-image.png";
 import { productImages } from "@dtos/ProductDTO";
 import { Box, HStack, Image, VStack } from "native-base";
 import { useState } from "react";
@@ -20,16 +19,19 @@ export function Carousel({ productImages }: CarouselProps) {
         loop
         width={width}
         autoPlay={false}
-        data={indexArray}
+        data={productImages}
         scrollAnimationDuration={500}
         onSnapToItem={(index) => setCurrentIndex(index)}
-        renderItem={({ index }) => (
+        renderItem={({ index, item }) => (
           <Box key={index} w="full" h="70">
             <Image
               alt="Imagem do produto"
-              source={productImage}
+              source={{
+                uri: item.uri,
+              }}
               w="full"
               h="full"
+              resizeMode="cover"
             />
           </Box>
         )}

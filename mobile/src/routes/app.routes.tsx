@@ -23,7 +23,7 @@ type AppRoutes = {
     isNew: boolean;
     acceptTrade: boolean;
   };
-  adDetails: undefined;
+  adDetails: { id: string };
 };
 
 export type AppNavigatorRoutesProps = NativeStackNavigationProp<AppRoutes>;

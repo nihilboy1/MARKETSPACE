@@ -3,8 +3,20 @@ import { Button } from "@components/Button";
 import { Carousel } from "@components/Carousel";
 import { PaymentMethodsComponent } from "@components/PaymentMethods";
 import { paymentMethodsProps } from "@dtos/ProductDTO";
+import { useAuthContext } from "@hooks/useAuthContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Box, HStack, ScrollView, Text, VStack, useTheme } from "native-base";
+import { AppNavigatorRoutesProps } from "@routes/app.routes";
+import { api } from "@services/api";
+import { AppError } from "@utils/AppError";
+import {
+  Box,
+  HStack,
+  ScrollView,
+  Text,
+  VStack,
+  useTheme,
+  useToast,
+} from "native-base";
 import { ArrowLeft, Tag } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { TouchableWithoutFeedback } from "react-native";
@@ -14,32 +26,86 @@ type RouteParams = {
   title: string;
   description: string;
   price: string;
-  images: any[];
+  productPhotos: any[];
   paymentMethods: paymentMethodsProps[];
   isNew: boolean;
   acceptTrade: boolean;
 };
 
 export function AdPreview() {
-  const { navigate, goBack } = useNavigation();
+  const { navigate, goBack } = useNavigation<AppNavigatorRoutesProps>();
   const { colors, fonts, sizes } = useTheme();
+  const [publishLoading, setPublishLoading] = useState(false);
   const [checkedPaymentMethods, setCheckedPaymentMethods] = useState<string[]>(
     []
   );
-
+  const toast = useToast();
   const containerPadding = sizes[8];
   const avatarSize = sizes[8];
-
+  const { userState } = useAuthContext();
   const route = useRoute();
   const {
     title,
     description,
     price,
-    images,
+    productPhotos,
     paymentMethods,
     isNew,
     acceptTrade,
   } = route.params as RouteParams;
+
+  async function handlePublish() {
+    setPublishLoading(true);
+
+    try {
+      const product = await api.post("/products", {
+        name: title,
+        description,
+        price: parseInt(price.replace(/[^0-9]/g, "")),
+        payment_methods: checkedPaymentMethods,
+        is_new: isNew,
+        accept_trade: acceptTrade,
+      });
+
+      const imageData = new FormData();
+
+      productPhotos.forEach((item) => {
+        const imageFile = {
+          ...item,
+          name: userState.name + "." + item.name,
+        } as any;
+
+        imageData.append("images", imageFile);
+      });
+
+      imageData.append("product_id", product.data.id);
+
+      const imagesData = await api.post("/products/images", imageData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      navigate("adDetails", {
+        id: product.data.id,
+      });
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não publicar o anúncio. Tente novamente mais tarde!";
+
+      if (isAppError) {
+        toast.show({
+          title,
+          placement: "top",
+          bgColor: "red.500",
+        });
+      }
+    } finally {
+      setPublishLoading(false);
+    }
+  }
 
   function filterPaymentMethods() {
     const checkedPaymentMethods = paymentMethods
@@ -71,7 +137,7 @@ export function AdPreview() {
         <Text mb="5" color={colors.white}>
           É assim que seu produto vai aparecer!
         </Text>
-        <Carousel productImages={[]} />
+        <Carousel productImages={productPhotos} />
       </VStack>
       <ScrollView p="8" flex="1" bgColor="white">
         <HStack alignItems="center">
@@ -80,27 +146,17 @@ export function AdPreview() {
             Makenna Baptista
           </Text>
         </HStack>
-        <Box
-          w="15"
-          mt="5"
-          px="1.5"
-          py="1"
-          borderRadius="full"
-          bgColor="gray.300"
-        >
-          <Text
-            fontFamily="heading"
-            fontSize="12"
-            textAlign="center"
-            color="gray.600"
-          >
-            {isNew ? "NOVO" : "USADO"}
-          </Text>
-        </Box>
-        <HStack alignItems="center" justifyContent="space-between" my="4">
-          <Text fontSize="22" fontWeight="bold" color="gray.700">
-            {title}
-          </Text>
+        <HStack justifyContent="space-between" alignItems="center" mt="5">
+          <Box w="15" px="1.5" py="1" borderRadius="full" bgColor="gray.300">
+            <Text
+              fontFamily="heading"
+              fontSize="12"
+              textAlign="center"
+              color="gray.600"
+            >
+              {isNew ? "NOVO" : "USADO"}
+            </Text>
+          </Box>
           <HStack alignItems="center">
             <Text
               fontSize="16"
@@ -115,6 +171,11 @@ export function AdPreview() {
               {price}
             </Text>
           </HStack>
+        </HStack>
+        <HStack alignItems="center" justifyContent="space-between" my="4">
+          <Text fontSize="22" fontWeight="bold" color="gray.700">
+            {title}
+          </Text>
         </HStack>
         <Text fontSize="15">{description}</Text>
         <HStack my="4">
@@ -152,6 +213,7 @@ export function AdPreview() {
           }
           title="Publicar"
           variant="solid"
+          onPress={handlePublish}
         />
       </HStack>
     </SafeAreaView>

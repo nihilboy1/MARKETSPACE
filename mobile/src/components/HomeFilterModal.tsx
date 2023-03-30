@@ -1,3 +1,4 @@
+import { paymentMethodsProps } from "@dtos/ProductDTO";
 import {
   Box,
   HStack,
@@ -8,53 +9,55 @@ import {
   useTheme,
 } from "native-base";
 import { CheckSquare, Square, X } from "phosphor-react-native";
-import { useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { Button } from "./Button";
 import { ConditionRadio } from "./ConditionRadio";
 
-export const paymentMethodsData = [
-  { id: 1, label: "boleto", checked: false },
-  { id: 2, label: "pix", checked: false },
-  { id: 3, label: "cash", checked: false },
-  { id: 4, label: "card", checked: false },
-  { id: 5, label: "deposit", checked: false },
-];
-
 interface HomeFilterModalProp {
   openFilterModal: boolean;
+  isNew: boolean | undefined;
+  paymentOptionsCheckBox: paymentMethodsProps[];
+  setPaymentOptionsCheckBox: (value: paymentMethodsProps[]) => void;
+  setIsNew(value: boolean | undefined): void;
+  acceptTrade: boolean | undefined;
+  setAcceptTrade(value: boolean | undefined): void;
   setOpenFilterModal: (value: boolean) => void;
+  applyFilters: any;
+  resetFilters: any;
 }
 
 export function HomeFilterModal({
   openFilterModal,
+  resetFilters,
+  isNew,
+  setIsNew,
+  acceptTrade,
+  setAcceptTrade,
   setOpenFilterModal,
+  applyFilters,
+  paymentOptionsCheckBox,
+  setPaymentOptionsCheckBox,
 }: HomeFilterModalProp) {
-  const [radioValue, setRadioValue] = useState<boolean>(false);
-  const [acceptExchange, setAcceptExchange] = useState(false);
-  const [paymentOptions, setPaymentOptions] = useState(paymentMethodsData);
-
-  function handleFiltersReset() {
-    const resetedOptions = paymentOptions.map((option) => {
-      return { ...option, checked: false };
-    });
-    setPaymentOptions(resetedOptions);
-    setRadioValue(true);
-    setAcceptExchange(false);
-  }
-
   const handleSetPaymentOptions = (id: number) => {
-    const updatedOptions = paymentOptions.map((option, i) => {
+    const updatedOptions = paymentOptionsCheckBox.map((option, i) => {
       if (i === id - 1) {
         return { ...option, checked: !option.checked };
       }
       return option;
     });
-    setPaymentOptions(updatedOptions);
+    setPaymentOptionsCheckBox(updatedOptions);
   };
 
   const { sizes, colors } = useTheme();
-
+  function handleAcceptTrade() {
+    if (acceptTrade === undefined) {
+      setAcceptTrade(false);
+    } else if (!acceptTrade) {
+      setAcceptTrade(true);
+    } else {
+      setAcceptTrade(undefined);
+    }
+  }
   return (
     <Modal
       animationPreset="slide"
@@ -81,43 +84,59 @@ export function HomeFilterModal({
             <Text fontSize="16" fontWeight="bold" color="gray.500" mb="2">
               Condição
             </Text>
-            <ConditionRadio
-              setRadioValue={setRadioValue}
-              radioValue={radioValue}
-            />
+            <ConditionRadio setIsNew={setIsNew} isNew={isNew} />
           </VStack>
           <VStack mb="6">
             <Text fontSize="16" fontWeight="bold" color="gray.500" mb="2">
               Aceita troca?
             </Text>
-            <TouchableOpacity
-              onPress={() => setAcceptExchange(!acceptExchange)}
-            >
-              <HStack
-                backgroundColor={acceptExchange ? "blue.400" : "gray.300"}
-                alignItems="center"
-                justifyContent={acceptExchange ? "flex-end" : "flex-start"}
-                w="16"
-                h="8"
-                borderRadius="full"
-              >
-                <Box
-                  p="1"
-                  m="1"
-                  w="6"
-                  h="6"
-                  backgroundColor="white"
+            <HStack alignItems="center">
+              <TouchableOpacity onPress={handleAcceptTrade}>
+                <HStack
+                  backgroundColor={
+                    acceptTrade === undefined
+                      ? "gray.200"
+                      : acceptTrade
+                      ? "blue.400"
+                      : "gray.300"
+                  }
+                  alignItems="center"
+                  justifyContent={
+                    acceptTrade === undefined
+                      ? "flex-start"
+                      : acceptTrade
+                      ? "flex-end"
+                      : "center"
+                  }
+                  w="24"
+                  h="8"
                   borderRadius="full"
-                />
-              </HStack>
-            </TouchableOpacity>
+                >
+                  <Box
+                    p="1"
+                    m="1"
+                    w="6"
+                    h="6"
+                    backgroundColor="white"
+                    borderRadius="full"
+                  />
+                </HStack>
+              </TouchableOpacity>
+              <Text ml="4" fontSize="18" color="gray.500" fontFamily="heading">
+                {acceptTrade === undefined
+                  ? "Não definido"
+                  : acceptTrade
+                  ? "Sim"
+                  : "Não"}
+              </Text>
+            </HStack>
           </VStack>
           <VStack mb="6">
             <Text fontSize="16" fontWeight="bold" color="gray.500" mb="2">
               Meios de pagamento aceitos
             </Text>
             <VStack>
-              {paymentOptions.map((option) => {
+              {paymentOptionsCheckBox.map((option) => {
                 return (
                   <TouchableOpacity
                     onPress={() => {
@@ -139,7 +158,17 @@ export function HomeFilterModal({
                         <Square size={28} color={colors.gray[500]} />
                       )}
                       <Text ml="2" fontSize="18" color="gray.500">
-                        {option.label}
+                        {option.label === "boleto"
+                          ? "Boleto"
+                          : option.label === "pix"
+                          ? "Pix"
+                          : option.label === "cash"
+                          ? "Dinheiro"
+                          : option.label === "card"
+                          ? "Cartão de crédito"
+                          : option.label === "deposit"
+                          ? "Depósito bancário"
+                          : ""}
                       </Text>
                     </HStack>
                   </TouchableOpacity>
@@ -148,12 +177,13 @@ export function HomeFilterModal({
             </VStack>
           </VStack>
           <HStack justifyContent="space-between">
+            <Button title="Resetar filtros" w="48%" onPress={resetFilters} />
             <Button
-              title="Resetar filtros"
+              title="Aplicar filtros"
               w="48%"
-              onPress={() => handleFiltersReset()}
+              variant="link"
+              onPress={applyFilters}
             />
-            <Button title="Aplicar filtros" w="48%" variant="link" />
           </HStack>
         </ScrollView>
       </Modal.Content>
