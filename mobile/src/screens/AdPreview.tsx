@@ -1,26 +1,60 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
 import { Button } from "@components/Button";
 import { Carousel } from "@components/Carousel";
-import { useNavigation } from "@react-navigation/native";
+import { PaymentMethodsComponent } from "@components/PaymentMethods";
+import { paymentMethodsProps } from "@dtos/ProductDTO";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Box, HStack, ScrollView, Text, VStack, useTheme } from "native-base";
-import {
-  ArrowLeft,
-  Bank,
-  Barcode,
-  CreditCard,
-  Money,
-  QrCode,
-  Tag,
-} from "phosphor-react-native";
+import { ArrowLeft, Tag } from "phosphor-react-native";
+import { useEffect, useState } from "react";
 import { TouchableWithoutFeedback } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type RouteParams = {
+  title: string;
+  description: string;
+  price: string;
+  images: any[];
+  paymentMethods: paymentMethodsProps[];
+  isNew: boolean;
+  acceptTrade: boolean;
+};
+
 export function AdPreview() {
+  const { navigate, goBack } = useNavigation();
   const { colors, fonts, sizes } = useTheme();
+  const [checkedPaymentMethods, setCheckedPaymentMethods] = useState<string[]>(
+    []
+  );
+
   const containerPadding = sizes[8];
   const avatarSize = sizes[8];
 
-  const { navigate, goBack } = useNavigation();
+  const route = useRoute();
+  const {
+    title,
+    description,
+    price,
+    images,
+    paymentMethods,
+    isNew,
+    acceptTrade,
+  } = route.params as RouteParams;
+
+  function filterPaymentMethods() {
+    const checkedPaymentMethods = paymentMethods
+      .filter((method) => {
+        return method.checked;
+      })
+      .map((method) => {
+        return method.label;
+      });
+    setCheckedPaymentMethods(checkedPaymentMethods);
+  }
+
+  useEffect(() => {
+    filterPaymentMethods();
+  }, []);
 
   return (
     <SafeAreaView
@@ -37,15 +71,7 @@ export function AdPreview() {
         <Text mb="5" color={colors.white}>
           É assim que seu produto vai aparecer!
         </Text>
-        <Carousel
-          productImages={[
-            { id: "52", path: "aa" },
-            { id: "52", path: "aa" },
-            { id: "52", path: "aa" },
-            { id: "52", path: "aa" },
-            { id: "52", path: "aa" },
-          ]}
-        />
+        <Carousel productImages={[]} />
       </VStack>
       <ScrollView p="8" flex="1" bgColor="white">
         <HStack alignItems="center">
@@ -68,12 +94,12 @@ export function AdPreview() {
             textAlign="center"
             color="gray.600"
           >
-            NOVO
+            {isNew ? "NOVO" : "USADO"}
           </Text>
         </Box>
         <HStack alignItems="center" justifyContent="space-between" my="4">
           <Text fontSize="22" fontWeight="bold" color="gray.700">
-            Bike
+            {title}
           </Text>
           <HStack alignItems="center">
             <Text
@@ -86,58 +112,24 @@ export function AdPreview() {
               R$
             </Text>
             <Text fontSize="26" fontWeight="bold" color="blue.400">
-              450,00
+              {price}
             </Text>
           </HStack>
         </HStack>
-        <Text fontSize="15">
-          Cras congue cursus in tortor sagittis placerat nunc, tellus arcu.
-          Vitae ante leo eget maecenas urna mattis cursus. Mauris metus amet
-          nibh mauris mauris accumsan, euismod. Aenean leo nunc, purus iaculis
-          in aliquam.
-        </Text>
+        <Text fontSize="15">{description}</Text>
         <HStack my="4">
           <Text fontFamily="heading" fontSize="16" color="gray.500">
             Aceita troca?
           </Text>
           <Text fontSize="16" color="gray.500" ml="2.5">
-            Sim
+            {acceptTrade ? "Sim" : "Não"}
           </Text>
         </HStack>
         <VStack minH="230">
           <Text fontFamily="heading" fontSize="16" color="gray.500" mb="2">
             Meios de pagamento aceitos
           </Text>
-          <HStack mb="1.5">
-            <Barcode color={colors.gray[500]} />
-            <Text ml="2" fontSize="16" color="gray.500">
-              Boleto
-            </Text>
-          </HStack>
-          <HStack mb="1.5">
-            <QrCode color={colors.gray[500]} />
-            <Text ml="2" fontSize="16" color="gray.500">
-              Pix
-            </Text>
-          </HStack>
-          <HStack mb="1.5">
-            <Money color={colors.gray[500]} />
-            <Text ml="2" fontSize="16" color="gray.500">
-              Dinheiro
-            </Text>
-          </HStack>
-          <HStack mb="1.5">
-            <CreditCard color={colors.gray[500]} />
-            <Text ml="2" fontSize="16" color="gray.500">
-              Cartão de Crédito
-            </Text>
-          </HStack>
-          <HStack mb="1.5">
-            <Bank color={colors.gray[500]} />
-            <Text ml="2" fontSize="16" color="gray.500">
-              Depósito Bancário
-            </Text>
-          </HStack>
+          <PaymentMethodsComponent paymentMethods={checkedPaymentMethods} />
         </VStack>
       </ScrollView>
       <HStack bg="white" p="5" justifyContent="space-between">

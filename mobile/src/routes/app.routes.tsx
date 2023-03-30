@@ -1,4 +1,4 @@
-import { ProductDTO } from "@dtos/ProductDTO";
+import { ProductDTO, paymentMethodsProps } from "@dtos/ProductDTO";
 import {
   NativeStackNavigationProp,
   createNativeStackNavigator,
@@ -14,8 +14,16 @@ type AppRoutes = {
   myAds: undefined;
   createAd: undefined;
   productDetails: { data: ProductDTO };
-  adPreview: undefined;
-  adDetails: { id: string };
+  adPreview: {
+    title: string;
+    description: string;
+    price: string;
+    productPhotos: any[];
+    paymentMethods: paymentMethodsProps[];
+    isNew: boolean;
+    acceptTrade: boolean;
+  };
+  adDetails: undefined;
 };
 
 export type AppNavigatorRoutesProps = NativeStackNavigationProp<AppRoutes>;

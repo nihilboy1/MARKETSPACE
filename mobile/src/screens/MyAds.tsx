@@ -23,8 +23,8 @@ export function MyAds() {
     navigate("createAd");
   }
 
-  function moveToAdDetails(id: string) {
-    navigate("adDetails", { id });
+  function moveToAdDetails() {
+    navigate("adDetails");
   }
   return (
     <SafeAreaView
@@ -80,8 +80,8 @@ export function MyAds() {
         renderItem={({ item }) => (
           <MiniCardAd
             mini
-            onPress={() => {
-              moveToAdDetails(item.id);
+            onPress={(item) => {
+              moveToAdDetails();
             }}
             condition={item.is_new}
             thumb={""}

@@ -13,20 +13,12 @@ import { TouchableOpacity } from "react-native";
 import { Button } from "./Button";
 import { ConditionRadio } from "./ConditionRadio";
 
-export const paymentOptionsDATA = [
-  { id: 1, label: "Boleto", checked: false },
-  { id: 2, label: "Pix", checked: false },
-  { id: 3, label: "Dinheiro", checked: false },
-  {
-    id: 4,
-    label: "Cartão de crédito",
-    checked: false,
-  },
-  {
-    id: 5,
-    label: "Depósito bancário",
-    checked: false,
-  },
+export const paymentMethodsData = [
+  { id: 1, label: "boleto", checked: false },
+  { id: 2, label: "pix", checked: false },
+  { id: 3, label: "cash", checked: false },
+  { id: 4, label: "card", checked: false },
+  { id: 5, label: "deposit", checked: false },
 ];
 
 interface HomeFilterModalProp {
@@ -40,7 +32,7 @@ export function HomeFilterModal({
 }: HomeFilterModalProp) {
   const [radioValue, setRadioValue] = useState<boolean>(false);
   const [acceptExchange, setAcceptExchange] = useState(false);
-  const [paymentOptions, setPaymentOptions] = useState(paymentOptionsDATA);
+  const [paymentOptions, setPaymentOptions] = useState(paymentMethodsData);
 
   function handleFiltersReset() {
     const resetedOptions = paymentOptions.map((option) => {

@@ -1,103 +1,187 @@
 import { Button } from "@components/Button";
 import { ConditionRadio } from "@components/ConditionRadio";
-import { paymentOptionsDATA } from "@components/HomeFilterModal";
+import { paymentMethodsData } from "@components/HomeFilterModal";
 import { Input } from "@components/Input";
 import * as ImagePicker from "expo-image-picker";
 
 import { useNavigation } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
+import { AppError } from "@utils/AppError";
 import * as FileSystem from "expo-file-system";
 import {
   Box,
   Center,
   HStack,
+  Image,
   ScrollView,
   Text,
   VStack,
   useTheme,
   useToast,
 } from "native-base";
-import { ArrowLeft, CheckSquare, Plus, Square } from "phosphor-react-native";
-import { useState } from "react";
+import * as yup from "yup";
 
-import { TouchableOpacity } from "react-native";
+import { paymentMethodsProps } from "@dtos/ProductDTO";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { ArrowLeft, CheckSquare, Plus, Square, X } from "phosphor-react-native";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { ActivityIndicator, TouchableOpacity } from "react-native";
 import { TextInputMask } from "react-native-masked-text";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const createAdSchema = yup.object({
+  title: yup
+    .string()
+    .required("Informe um título.")
+    .min(6, "O título deve ter no mínimo 6 letras."),
+  price: yup.string().required("Informe um preço."),
+});
+
+type FormDataProps = {
+  title: string;
+  description: string;
+  price: string;
+};
+
 export function CreateAd() {
-  const [radioValue, setRadioValue] = useState(true);
-  const toast = useToast();
+  const [isNew, setIsNew] = useState(true);
+  const [acceptTrade, setAcceptTrade] = useState(false);
+  const [productPhotos, setProductPhotos] = useState<any[]>([]);
+  const [productPhotoIsLoading, setProductPhotoIsLoading] = useState(false);
+  const [paymentMethods, setpaymentMethods] =
+    useState<paymentMethodsProps[]>(paymentMethodsData);
 
-  const [currencyInputValue, setCurrencyInputValue] = useState("");
-  const [userProductPhotoFile, setUserProductPhotoFile] = useState<any>();
-  const [userProductPhoto, setUserProductPhoto] = useState("");
-  const [acceptExchange, setAcceptExchange] = useState(false);
-  const [ProductphotoIsLoading, setProductPhotoIsLoading] = useState(false);
-
-  const [paymentOptions, setPaymentOptions] = useState(paymentOptionsDATA);
   const { navigate, goBack } = useNavigation<AppNavigatorRoutesProps>();
   const { colors, fonts } = useTheme();
+  const toast = useToast();
 
-  async function handleUserProductPhotoSelect() {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormDataProps>({
+    defaultValues: {
+      title: "",
+      description: "",
+      price: "",
+    },
+    resolver: yupResolver(createAdSchema),
+  });
+
+  async function handleSetProductPhoto() {
     try {
       setProductPhotoIsLoading(true);
-      const selectedProductPhoto = await ImagePicker.launchImageLibraryAsync({
+      const photoSelected = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.7,
+        quality: 1,
         aspect: [4, 4],
         allowsEditing: true,
       });
 
-      if (selectedProductPhoto.canceled) {
+      if (photoSelected.canceled) {
         return;
       }
 
-      const URI = selectedProductPhoto.assets[0].uri
-        ? selectedProductPhoto.assets[0].uri
-        : null;
+      if (productPhotos.length > 4) {
+        throw new AppError("Só é possivel adicionar até 5 imagens!");
+      }
 
-      if (URI) {
-        const ProductphotoInfos = await FileSystem.getInfoAsync(URI);
-        if (ProductphotoInfos.size) {
-          if (ProductphotoInfos.size / 1024 / 1024 > 5) {
-            return toast.show({
-              title: "A imagem selecionada deve ter no máximo 5MB",
-              bgColor: "red.400",
-              placement: "top",
-            });
-          }
+      if (photoSelected.assets[0].uri) {
+        const photoInfo = await FileSystem.getInfoAsync(
+          photoSelected.assets[0].uri
+        );
+
+        if (photoInfo.size && photoInfo.size / 1024 / 1024 > 5) {
+          return toast.show({
+            title: "Essa imagem é muito grande. Escolha uma de até 5MB.",
+            placement: "top",
+            bgColor: "red.500",
+          });
         }
-        const fileType = selectedProductPhoto.assets[0].type;
-        const fileExtension = URI.split(".").pop();
-        const userAvatarFile = {
-          name: `foto_do_usuario.${fileExtension}`.toLowerCase(),
-          uri: URI,
-          type: `${fileType}/${fileExtension}`,
+
+        const fileExtension = photoSelected.assets[0].uri.split(".").pop();
+
+        const photoFile = {
+          name: `${fileExtension}`.toLowerCase(),
+          uri: photoSelected.assets[0].uri,
+          type: `${photoSelected.assets[0].type}/${fileExtension}`,
         } as any;
 
-        setUserProductPhotoFile(userAvatarFile);
-        setUserProductPhoto(URI);
+        setProductPhotos((images) => {
+          return [...images, photoFile];
+        });
+
+        toast.show({
+          title: "Foto selecionada!",
+          placement: "top",
+          bgColor: "green.500",
+        });
       }
     } catch (error) {
-      console.log(error);
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível selecionar a imagem. Tente novamente!";
+
+      if (isAppError) {
+        toast.show({
+          title,
+          placement: "top",
+          bgColor: "red.400",
+        });
+      }
     } finally {
       setProductPhotoIsLoading(false);
     }
   }
 
-  function moveToAdPreview() {
-    navigate("adPreview");
-  }
-
-  const handleSetPaymentOptions = (id: number) => {
-    const updatedOptions = paymentOptions.map((option, i) => {
+  function handleSetpaymentMethods(id: number) {
+    const updatedOptions = paymentMethods.map((option, i) => {
       if (i === id - 1) {
         return { ...option, checked: !option.checked };
       }
       return option;
     });
-    setPaymentOptions(updatedOptions);
-  };
+    setpaymentMethods(updatedOptions);
+  }
+
+  function removeProductPhoto(index: number) {
+    const newProductPhotos = [...productPhotos];
+    newProductPhotos.splice(index, 1);
+    setProductPhotos(newProductPhotos);
+  }
+  1;
+
+  function moveToAdPreview({ title, description, price }: FormDataProps) {
+    console.log(productPhotos.length);
+
+    if (productPhotos.length === 0) {
+      return toast.show({
+        title: "Selecione ao menos uma imagem!",
+        placement: "top",
+        bgColor: "red.500",
+      });
+    }
+    console.log(paymentMethods.length);
+    if (paymentMethods.length === 0) {
+      return toast.show({
+        title: "Selecione ao menos um meio de pagamento!",
+        placement: "top",
+        bgColor: "red.500",
+      });
+    }
+
+    navigate("adPreview", {
+      title,
+      description,
+      price,
+      productPhotos,
+      paymentMethods,
+      isNew,
+      acceptTrade,
+    });
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[200] }}>
@@ -119,66 +203,150 @@ export function CreateAd() {
             Imagens
           </Text>
           <Text color="gray.500" mt="1.5">
-            Escolha até 3 imagens para mostrar o quando o seu produto é
+            Escolha até 5 imagens para mostrar o quando o seu produto é
             incrível!
           </Text>
-          <HStack mt="2">
-            <TouchableOpacity>
-              <Center w="30" h="30" bgColor="gray.300" borderRadius="lg">
-                <Plus color={colors.gray[400]} />
+          <HStack mt="2" w="full" flexWrap="wrap">
+            {productPhotos.length > 0 &&
+              productPhotos.map((image, index) => (
+                <Box mr="2" mt="2" key={image.uri}>
+                  <TouchableOpacity
+                    onPress={() => removeProductPhoto(index)}
+                    hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                    style={{
+                      position: "absolute",
+                      backgroundColor: colors.gray[600],
+                      borderRadius: 99,
+                      zIndex: 999,
+                      top: 3,
+                      right: 3,
+                      padding: 2,
+                    }}
+                  >
+                    <X size="14" color={colors.gray[400]} />
+                  </TouchableOpacity>
+                  <Image
+                    w="20"
+                    h="20"
+                    source={{
+                      uri: image.uri,
+                    }}
+                    alt="Imagem do novo anúncio"
+                    resizeMode="cover"
+                    borderRadius={8}
+                  />
+                </Box>
+              ))}
+            {productPhotoIsLoading ? (
+              <Center w="20" h="20" mt="2">
+                <ActivityIndicator color={colors.gray[400]} />
               </Center>
-            </TouchableOpacity>
+            ) : (
+              productPhotos.length < 5 && (
+                <TouchableOpacity onPress={handleSetProductPhoto}>
+                  <Center
+                    w="20"
+                    h="20"
+                    bgColor="gray.300"
+                    borderRadius="lg"
+                    mt="2"
+                  >
+                    <Plus color={colors.gray[400]} />
+                  </Center>
+                </TouchableOpacity>
+              )
+            )}
           </HStack>
         </VStack>
         <VStack mt="5">
-          <Text color="gray.500" fontFamily="heading" fontSize="16">
+          <Text color="gray.500" fontFamily="heading" fontSize="16" mb="2">
             Sobre o produto
           </Text>
-          <Input placeholder="Título do anúncio" mt="2" />
-          <Input
-            placeholder="Descrição do produto"
-            mt="2"
-            h="40"
-            textAlignVertical="top"
+          <Controller
+            control={control}
+            name="title"
+            rules={{ required: "Informe o título" }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                placeholder="Título"
+                onChangeText={onChange}
+                value={value}
+                errorMessage={errors.title?.message}
+              />
+            )}
           />
-          <ConditionRadio
-            mt="4"
-            setRadioValue={setRadioValue}
-            radioValue={radioValue}
+          <Controller
+            control={control}
+            name="description"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                placeholder="Descrição"
+                multiline={true}
+                h="35"
+                numberOfLines={5}
+                textAlignVertical="top"
+                onChangeText={onChange}
+                value={value}
+              />
+            )}
           />
+          <ConditionRadio mt="4" setRadioValue={setIsNew} radioValue={isNew} />
         </VStack>
         <VStack mt="5">
           <Text color="gray.500" fontFamily="heading" fontSize="16">
-            Preço em R$
+            Preço
           </Text>
-          <TextInputMask
-            maxLength={8}
-            style={{
-              backgroundColor: "white",
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-              marginTop: 4,
-              borderRadius: 6,
-              color: colors.gray[500],
-              fontFamily: fonts.body,
-              fontSize: 16,
+          <Controller
+            control={control}
+            name="price"
+            rules={{
+              required: "Você esqueceu de informar o preço do produto :/",
             }}
-            options={{ unit: "" }}
-            type="money"
-            placeholder="Informe o valor do produto"
-            value={currencyInputValue}
-            onChangeText={setCurrencyInputValue}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <TextInputMask
+                  type={"money"}
+                  style={{
+                    backgroundColor: "white",
+                    paddingHorizontal: 10,
+                    paddingVertical: 10,
+                    marginTop: 4,
+                    borderRadius: 6,
+                    borderWidth: 1,
+                    borderColor: errors.price ? colors.red[400] : "transparent",
+                    color: colors.gray[500],
+                    fontFamily: fonts.body,
+                    fontSize: 16,
+                  }}
+                  options={{
+                    precision: 2, // Duas casas decimais
+                    separator: ",", // Separador decimal
+                    delimiter: ".", // Separador de milhar
+                    unit: "", // Unidade monetária
+                  }}
+                  placeholder="R$ 0,00"
+                  keyboardType="numeric"
+                  onChangeText={onChange}
+                  value={value}
+                />
+                {errors.price && (
+                  <Text style={{ color: colors.red[400] }}>
+                    {errors.price.message}
+                  </Text>
+                )}
+              </>
+            )}
           />
         </VStack>
         <VStack mt="5">
           <Text fontWeight="bold" color="gray.500" mb="1">
             Aceita troca?
           </Text>
-          <TouchableOpacity onPress={() => setAcceptExchange(!acceptExchange)}>
+          <TouchableOpacity onPress={() => setAcceptTrade(!acceptTrade)}>
             <HStack
-              backgroundColor={acceptExchange ? "blue.400" : "gray.300"}
+              backgroundColor={acceptTrade ? "blue.400" : "gray.300"}
               alignItems="center"
-              justifyContent={acceptExchange ? "flex-end" : "flex-start"}
+              justifyContent={acceptTrade ? "flex-end" : "flex-start"}
               w="16"
               h="8"
               borderRadius="full"
@@ -199,11 +367,11 @@ export function CreateAd() {
             Meios de pagamento aceitos
           </Text>
           <VStack>
-            {paymentOptions.map((option) => {
+            {paymentMethods.map((option) => {
               return (
                 <TouchableOpacity
                   onPress={() => {
-                    handleSetPaymentOptions(option.id);
+                    handleSetpaymentMethods(option.id);
                   }}
                   key={option.id}
                   style={{
@@ -221,7 +389,17 @@ export function CreateAd() {
                       <Square size={24} color={colors.gray[500]} />
                     )}
                     <Text ml="2" fontSize="16" color="gray.500">
-                      {option.label}
+                      {option.label === "boleto"
+                        ? "Boleto"
+                        : option.label === "pix"
+                        ? "Pix"
+                        : option.label === "card"
+                        ? "Cartão de crédito"
+                        : option.label === "deposit"
+                        ? "Depósito bancário"
+                        : option.label === "cash"
+                        ? "Dinheiro"
+                        : ""}
                     </Text>
                   </HStack>
                 </TouchableOpacity>
@@ -233,7 +411,7 @@ export function CreateAd() {
       <HStack bg="white" p="5" justifyContent="space-between">
         <Button onPress={goBack} title="Cancelar" variant="ghost" w="48%" />
         <Button
-          onPress={moveToAdPreview}
+          onPress={handleSubmit(moveToAdPreview)}
           title="Avançar"
           variant="link"
           w="48%"

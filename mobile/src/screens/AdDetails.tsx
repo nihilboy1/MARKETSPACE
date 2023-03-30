@@ -1,6 +1,6 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
 import { Carousel } from "@components/Carousel";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { Box, HStack, ScrollView, Text, VStack, useTheme } from "native-base";
 import {
   ArrowLeft,
@@ -15,23 +15,14 @@ import {
 } from "phosphor-react-native";
 
 import { Button } from "@components/Button";
-import { ProductDTO } from "@dtos/ProductDTO";
 import { TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type AdDetailRouteParams = {
-  data: ProductDTO;
-};
-
 export function AdDetails() {
   const { colors, sizes } = useTheme();
   const avatarSize = sizes[8];
-
-  const route = useRoute();
   const { goBack } = useNavigation();
-
-  const { id } = route.params as { id: string };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[200] }}>
@@ -149,7 +140,7 @@ export function AdDetails() {
           </HStack>
         </VStack>
       </ScrollView>
-      <VStack bg="white" p="5" justifyContent="space-between ">
+      <VStack bg="white" p="5" justifyContent="space-between">
         <Button
           onPress={() => {}}
           mb="2"

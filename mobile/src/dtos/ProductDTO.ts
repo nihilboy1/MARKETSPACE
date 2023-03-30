@@ -1,6 +1,7 @@
-type paymentMethods = {
-  key: string;
-  name: string;
+export type paymentMethodsProps = {
+  id: number;
+  label: string;
+  checked: boolean;
 };
 
 export type productImages = {
@@ -15,7 +16,7 @@ export type ProductDTO = {
   is_new: boolean;
   accept_trade: boolean;
   product_images: productImages[];
-  payment_methods: paymentMethods[];
+  payment_methods: paymentMethodsProps[];
   user: {
     avatar: string;
   };
