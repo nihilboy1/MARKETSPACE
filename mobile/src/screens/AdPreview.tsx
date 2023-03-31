@@ -1,6 +1,7 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
 import { Button } from "@components/Button";
 import { Carousel } from "@components/Carousel";
+import { Loading } from "@components/Loading";
 import { PaymentMethodsComponent } from "@components/PaymentMethods";
 import { paymentMethodsProps } from "@dtos/ProductDTO";
 import { useAuthContext } from "@hooks/useAuthContext";
@@ -61,7 +62,7 @@ export function AdPreview() {
       const product = await api.post("/products", {
         name: title,
         description,
-        price: parseInt(price.replace(/[^0-9]/g, "")),
+        price,
         payment_methods: checkedPaymentMethods,
         is_new: isNew,
         accept_trade: acceptTrade,
@@ -130,92 +131,104 @@ export function AdPreview() {
         paddingTop: containerPadding,
       }}
     >
-      <VStack alignItems="center" w="full">
-        <Text fontFamily="heading" color={colors.white}>
-          Pré visualização do anúncio
-        </Text>
-        <Text mb="5" color={colors.white}>
-          É assim que seu produto vai aparecer!
-        </Text>
-        <Carousel productImages={productPhotos} />
-      </VStack>
-      <ScrollView p="8" flex="1" bgColor="white">
-        <HStack alignItems="center">
-          <DefaultAvatar width={avatarSize} height={avatarSize} />
-          <Text ml="3" fontSize="16" color="gray.700">
-            Makenna Baptista
-          </Text>
-        </HStack>
-        <HStack justifyContent="space-between" alignItems="center" mt="5">
-          <Box w="15" px="1.5" py="1" borderRadius="full" bgColor="gray.300">
-            <Text
-              fontFamily="heading"
-              fontSize="12"
-              textAlign="center"
-              color="gray.600"
-            >
-              {isNew ? "NOVO" : "USADO"}
+      {productPhotos ? (
+        <>
+          <VStack alignItems="center" w="full">
+            <Text fontFamily="heading" color={colors.white}>
+              Pré visualização do anúncio
             </Text>
-          </Box>
-          <HStack alignItems="center">
-            <Text
-              fontSize="16"
-              fontWeight="bold"
-              color="blue.400"
-              pt="1.5"
-              pr="1.5"
-            >
-              R$
+            <Text mb="5" color={colors.white}>
+              É assim que seu produto vai aparecer!
             </Text>
-            <Text fontSize="26" fontWeight="bold" color="blue.400">
-              {price}
-            </Text>
+            <Carousel productImages={productPhotos} />
+          </VStack>
+          <ScrollView p="8" flex="1" bgColor="white">
+            <HStack alignItems="center">
+              <DefaultAvatar width={avatarSize} height={avatarSize} />
+              <Text ml="3" fontSize="16" color="gray.700">
+                Makenna Baptista
+              </Text>
+            </HStack>
+            <HStack justifyContent="space-between" alignItems="center" mt="5">
+              <Box
+                w="15"
+                px="1.5"
+                py="1"
+                borderRadius="full"
+                bgColor="gray.300"
+              >
+                <Text
+                  fontFamily="heading"
+                  fontSize="12"
+                  textAlign="center"
+                  color="gray.600"
+                >
+                  {isNew ? "NOVO" : "USADO"}
+                </Text>
+              </Box>
+              <HStack alignItems="center">
+                <Text
+                  fontSize="16"
+                  fontWeight="bold"
+                  color="blue.400"
+                  pt="1.5"
+                  pr="1.5"
+                >
+                  R$
+                </Text>
+                <Text fontSize="26" fontWeight="bold" color="blue.400">
+                  {price}
+                </Text>
+              </HStack>
+            </HStack>
+            <HStack alignItems="center" justifyContent="space-between" my="4">
+              <Text fontSize="22" fontWeight="bold" color="gray.700">
+                {title}
+              </Text>
+            </HStack>
+            <Text fontSize="15">{description}</Text>
+            <HStack my="4">
+              <Text fontFamily="heading" fontSize="16" color="gray.500">
+                Aceita troca?
+              </Text>
+              <Text fontSize="16" color="gray.500" ml="2.5">
+                {acceptTrade ? "Sim" : "Não"}
+              </Text>
+            </HStack>
+            <VStack minH="230">
+              <Text fontFamily="heading" fontSize="16" color="gray.500" mb="2">
+                Meios de pagamento aceitos
+              </Text>
+              <PaymentMethodsComponent paymentMethods={checkedPaymentMethods} />
+            </VStack>
+          </ScrollView>
+          <HStack bg="white" p="5" justifyContent="space-between">
+            <Button
+              w="48%"
+              leftIcon={
+                <TouchableWithoutFeedback>
+                  <ArrowLeft color={colors.gray[500]} />
+                </TouchableWithoutFeedback>
+              }
+              onPress={goBack}
+              title="Voltar e editar"
+            />
+            <Button
+              w="48%"
+              leftIcon={
+                <TouchableWithoutFeedback>
+                  <Tag color="white" />
+                </TouchableWithoutFeedback>
+              }
+              title="Publicar"
+              variant="solid"
+              onPress={handlePublish}
+            />
           </HStack>
-        </HStack>
-        <HStack alignItems="center" justifyContent="space-between" my="4">
-          <Text fontSize="22" fontWeight="bold" color="gray.700">
-            {title}
-          </Text>
-        </HStack>
-        <Text fontSize="15">{description}</Text>
-        <HStack my="4">
-          <Text fontFamily="heading" fontSize="16" color="gray.500">
-            Aceita troca?
-          </Text>
-          <Text fontSize="16" color="gray.500" ml="2.5">
-            {acceptTrade ? "Sim" : "Não"}
-          </Text>
-        </HStack>
-        <VStack minH="230">
-          <Text fontFamily="heading" fontSize="16" color="gray.500" mb="2">
-            Meios de pagamento aceitos
-          </Text>
-          <PaymentMethodsComponent paymentMethods={checkedPaymentMethods} />
-        </VStack>
-      </ScrollView>
-      <HStack bg="white" p="5" justifyContent="space-between">
-        <Button
-          w="48%"
-          leftIcon={
-            <TouchableWithoutFeedback>
-              <ArrowLeft color={colors.gray[500]} />
-            </TouchableWithoutFeedback>
-          }
-          onPress={goBack}
-          title="Voltar e editar"
-        />
-        <Button
-          w="48%"
-          leftIcon={
-            <TouchableWithoutFeedback>
-              <Tag color="white" />
-            </TouchableWithoutFeedback>
-          }
-          title="Publicar"
-          variant="solid"
-          onPress={handlePublish}
-        />
-      </HStack>
+        </>
+      ) : (
+        <Loading />
+      )}
     </SafeAreaView>
   );
 }

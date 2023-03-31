@@ -20,7 +20,7 @@ import {
 } from "native-base";
 import * as yup from "yup";
 
-import { paymentMethodsProps } from "@dtos/ProductDTO";
+import { paymentMethodsProps, productImagesProps } from "@dtos/ProductDTO";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
   ArrowLeft,
@@ -53,11 +53,10 @@ type FormDataProps = {
 export function CreateAd() {
   const [isNew, setIsNew] = useState<boolean | undefined>(true);
   const [acceptTrade, setAcceptTrade] = useState(false);
-  const [productPhotos, setProductPhotos] = useState<any[]>([]);
+  const [productPhotos, setProductPhotos] = useState<productImagesProps[]>([]);
   const [productPhotoIsLoading, setProductPhotoIsLoading] = useState(false);
   const [paymentMethods, setpaymentMethods] =
     useState<paymentMethodsProps[]>(paymentMethodsData);
-
   const { navigate, goBack } = useNavigation<AppNavigatorRoutesProps>();
   const { colors, fonts } = useTheme();
   const toast = useToast();
@@ -109,10 +108,10 @@ export function CreateAd() {
         const fileExtension = photoSelected.assets[0].uri.split(".").pop();
 
         const photoFile = {
-          name: `${fileExtension}`.toLowerCase(),
-          uri: photoSelected.assets[0].uri,
+          id: `${fileExtension}`.toLowerCase(),
+          path: photoSelected.assets[0].uri,
           type: `${photoSelected.assets[0].type}/${fileExtension}`,
-        } as any;
+        } as productImagesProps;
 
         setProductPhotos((images) => {
           return [...images, photoFile];
@@ -160,8 +159,6 @@ export function CreateAd() {
   1;
 
   function moveToAdPreview({ title, description, price }: FormDataProps) {
-    console.log(productPhotos.length);
-
     if (productPhotos.length === 0) {
       return toast.show({
         title: "Selecione ao menos uma imagem!",
@@ -176,6 +173,8 @@ export function CreateAd() {
         bgColor: "red.500",
       });
     }
+
+    console.log(price);
 
     if (isNew === true || isNew === false) {
       navigate("adPreview", {
@@ -216,7 +215,7 @@ export function CreateAd() {
           <HStack mt="2" w="full" flexWrap="wrap">
             {productPhotos.length > 0 &&
               productPhotos.map((image, index) => (
-                <Box mr="2" mt="2" key={image.uri}>
+                <Box mr="2" mt="2" key={image.path}>
                   <TouchableOpacity
                     onPress={() => removeProductPhoto(index)}
                     hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
@@ -236,7 +235,7 @@ export function CreateAd() {
                     w="20"
                     h="20"
                     source={{
-                      uri: image.uri,
+                      uri: image.path,
                     }}
                     alt="Imagem do novo anúncio"
                     resizeMode="cover"

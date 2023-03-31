@@ -1,17 +1,19 @@
-import { productImages } from "@dtos/ProductDTO";
+import { productImagesProps } from "@dtos/ProductDTO";
+import { api } from "@services/api";
 import { Box, HStack, Image, VStack } from "native-base";
 import { useState } from "react";
 import { Dimensions } from "react-native";
 import RNRCCarousel from "react-native-reanimated-carousel";
 
 type CarouselProps = {
-  productImages: productImages[];
+  productImages: productImagesProps[];
 };
 
 export function Carousel({ productImages }: CarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const width = Dimensions.get("window").width;
   const indexArray = productImages.map((image, index) => index);
+  console.log(productImages);
 
   return (
     <VStack h="70" alignItems="center" justifyContent="flex-end" shadow={4}>
@@ -27,7 +29,7 @@ export function Carousel({ productImages }: CarouselProps) {
             <Image
               alt="Imagem do produto"
               source={{
-                uri: item.path,
+                uri: `${api.defaults.baseURL}/images/${item.path}`,
               }}
               w="full"
               h="full"

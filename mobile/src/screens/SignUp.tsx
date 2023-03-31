@@ -128,7 +128,6 @@ export function SignUp() {
         setUserPhoto(URI);
       }
     } catch (error) {
-      console.log(error);
     } finally {
       setPhotoIsLoading(false);
     }
@@ -262,7 +261,7 @@ export function SignUp() {
                 name="whatsApp"
                 render={({ field: { onChange } }) => (
                   <Input
-                    placeholder="WhatsApp"
+                    placeholder="WhatsApp (DDD+9+NUMERO)"
                     onChangeText={onChange}
                     errorMessage={errors.whatsApp?.message}
                   />

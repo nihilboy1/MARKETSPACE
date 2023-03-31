@@ -1,4 +1,8 @@
-import { ProductDTO, paymentMethodsProps } from "@dtos/ProductDTO";
+import {
+  ProductDTO,
+  paymentMethodsProps,
+  productImagesProps,
+} from "@dtos/ProductDTO";
 import {
   NativeStackNavigationProp,
   createNativeStackNavigator,
@@ -17,7 +21,7 @@ type AppRoutes = {
     title: string;
     description: string;
     price: string;
-    productPhotos: any[];
+    productPhotos: productImagesProps[];
     paymentMethods: paymentMethodsProps[];
     isNew: boolean;
     acceptTrade: boolean;
