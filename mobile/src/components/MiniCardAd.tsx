@@ -1,5 +1,4 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
-import miniCardImage from "@assets/product-image.png";
 import { HStack, Image, Text, VStack, useTheme } from "native-base";
 import { TouchableOpacity, TouchableOpacityProps } from "react-native";
 
@@ -37,7 +36,7 @@ export function MiniCardAd({
           w="full"
           h="32"
           borderRadius="xl"
-          source={miniCardImage}
+          source={{ uri: thumb }}
           resizeMode="cover"
         />
         <HStack

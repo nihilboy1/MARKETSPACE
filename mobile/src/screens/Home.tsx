@@ -59,15 +59,20 @@ export type FormDataProps = {
 
 export function Home() {
   const [products, setProducts] = useState<ProductDTO[]>([]);
-  const [paymentOptionsCheckBox, setPaymentOptionsCheckBox] =
-    useState<paymentMethodsProps[]>(paymentMethodsData);
+
   const [filtersAreApplying, setFiltersAreApplying] = useState(false);
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [numerOfAds, setNumerOfAds] = useState(0);
+  const [isNew, setIsNew] = useState<boolean | undefined>(undefined);
+  const toast = useToast();
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [acceptTrade, setAcceptTrade] = useState<boolean | undefined>(
     undefined
   );
-  const [isNew, setIsNew] = useState<boolean | undefined>(undefined);
+  const [paymentOptionsCheckBox, setPaymentOptionsCheckBox] =
+    useState<paymentMethodsProps[]>(paymentMethodsData);
   const [paymentMethods, setPaymentMethods] = useState([
     "cash",
     "pix",
@@ -75,35 +80,11 @@ export function Home() {
     "card",
     "deposit",
   ]);
-  const toast = useToast();
-
-  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-  const [filterLoading, setFilterLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
   const { navigate } = useNavigation<AppNavigatorRoutesProps>();
   const { sizes, colors } = useTheme();
   const { userState } = useAuthContext();
-
   const iconsSizes = sizes[6];
-  2;
   const containerPadding = sizes[8];
-
-  function handleDismiss() {
-    Keyboard.dismiss();
-  }
-
-  function moveToCreateAd() {
-    navigate("createAd");
-  }
-
-  function moveToAdDetails(data: ProductDTO) {
-    navigate("productDetails", { data });
-  }
-
-  function moveToMyAds() {
-    navigate("myAds");
-  }
 
   const {
     control,
@@ -116,9 +97,26 @@ export function Home() {
     resolver: yupResolver(signInSchema),
   });
 
-  const handleApplyFilters = async ({ search }: FormDataProps) => {
+  function handleDismiss() {
+    Keyboard.dismiss();
+  }
+
+  function moveToCreateAd() {
+    navigate("createAd");
+  }
+
+  function moveToAdDetails(id: string) {
+    navigate("ad", { id });
+  }
+
+  function moveToMyAds() {
+    navigate("myAds");
+  }
+
+  async function handleApplyFilters({ search }: FormDataProps) {
     setOpenFilterModal(false);
     setFiltersAreApplying(true);
+
     try {
       let paymentMethodsQuery = "";
       paymentMethods.forEach((item) => {
@@ -127,9 +125,9 @@ export function Home() {
 
       setFilterLoading(true);
       const productsData = await api.get(
-        `/products/?is_new=${isNew}&accept_trade=${acceptTrade}${paymentMethodsQuery}${
-          search.length > 0 && `&query=${search}`
-        }`
+        `/products/?${isNew !== undefined ? `is_new=${isNew}` : ""}${
+          acceptTrade !== undefined ? `&accept_trade=${acceptTrade}` : ""
+        }${paymentMethodsQuery}${search.length > 0 && `&query=${search}`}`
       );
       setProducts(productsData.data);
     } catch (error) {
@@ -148,14 +146,14 @@ export function Home() {
     } finally {
       setFilterLoading(false);
     }
-  };
+  }
 
-  const handleSetPaymentOptions = () => {
+  async function handleSetPaymentOptions() {
     const updatedOptions = paymentOptionsCheckBox.map((option, i) => {
       return { ...option, checked: false };
     });
     setPaymentOptionsCheckBox(updatedOptions);
-  };
+  }
 
   async function handleFiltersReset() {
     setPaymentMethods(["cash", "pix", "boleto", "card", "deposit"]);
@@ -345,9 +343,9 @@ export function Home() {
               return (
                 <MiniCardAd
                   mini
-                  onPress={() => moveToAdDetails}
+                  onPress={() => moveToAdDetails(item.id)}
                   condition={item.is_new}
-                  thumb={""}
+                  thumb={`${api.defaults.baseURL}/images/${item.product_images[0].path}`}
                   price={item.price}
                   name={item.name}
                 />

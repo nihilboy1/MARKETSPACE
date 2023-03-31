@@ -1,8 +1,7 @@
 import { Button } from "@components/Button";
-import { ConditionRadio } from "@components/ConditionRadio";
-import { paymentMethodsData } from "@components/HomeFilterModal";
 import { Input } from "@components/Input";
 import * as ImagePicker from "expo-image-picker";
+import { paymentMethodsData } from "./Home";
 
 import { useNavigation } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
@@ -23,7 +22,14 @@ import * as yup from "yup";
 
 import { paymentMethodsProps } from "@dtos/ProductDTO";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { ArrowLeft, CheckSquare, Plus, Square, X } from "phosphor-react-native";
+import {
+  ArrowLeft,
+  CheckSquare,
+  Plus,
+  Square,
+  X,
+  XCircle,
+} from "phosphor-react-native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, TouchableOpacity } from "react-native";
@@ -45,7 +51,7 @@ type FormDataProps = {
 };
 
 export function CreateAd() {
-  const [isNew, setIsNew] = useState(true);
+  const [isNew, setIsNew] = useState<boolean | undefined>(true);
   const [acceptTrade, setAcceptTrade] = useState(false);
   const [productPhotos, setProductPhotos] = useState<any[]>([]);
   const [productPhotoIsLoading, setProductPhotoIsLoading] = useState(false);
@@ -163,7 +169,6 @@ export function CreateAd() {
         bgColor: "red.500",
       });
     }
-    console.log(paymentMethods.length);
     if (paymentMethods.length === 0) {
       return toast.show({
         title: "Selecione ao menos um meio de pagamento!",
@@ -172,15 +177,17 @@ export function CreateAd() {
       });
     }
 
-    navigate("adPreview", {
-      title,
-      description,
-      price,
-      productPhotos,
-      paymentMethods,
-      isNew,
-      acceptTrade,
-    });
+    if (isNew === true || isNew === false) {
+      navigate("adPreview", {
+        title,
+        description,
+        price,
+        productPhotos,
+        paymentMethods,
+        isNew,
+        acceptTrade,
+      });
+    }
   }
 
   return (
@@ -290,7 +297,74 @@ export function CreateAd() {
               />
             )}
           />
-          <ConditionRadio mt="4" setRadioValue={setIsNew} radioValue={isNew} />
+          <HStack>
+            <TouchableOpacity
+              onPress={() => setIsNew(true)}
+              style={{
+                padding: 8,
+                paddingHorizontal: 14,
+                borderRadius: 22,
+                minWidth: 60,
+                marginRight: 15,
+                backgroundColor: `${
+                  isNew ? colors.blue[400] : colors.gray[300]
+                }`,
+              }}
+            >
+              <HStack alignItems="center">
+                <Text
+                  fontFamily="heading"
+                  textAlign="center"
+                  pb="0.5"
+                  color={`${isNew ? "gray.300" : "gray.500"}`}
+                >
+                  Novo
+                </Text>
+                {isNew === undefined
+                  ? ""
+                  : isNew && (
+                      <XCircle
+                        size={18}
+                        color="white"
+                        weight="fill"
+                        style={{ marginLeft: 6 }}
+                      />
+                    )}
+              </HStack>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setIsNew(false)}
+              style={{
+                padding: 8,
+                paddingHorizontal: 14,
+                borderRadius: 22,
+                minWidth: 60,
+                marginRight: 15,
+                backgroundColor: `${
+                  !isNew ? colors.blue[400] : colors.gray[300]
+                }`,
+              }}
+            >
+              <HStack alignItems="center">
+                <Text
+                  fontFamily="heading"
+                  textAlign="center"
+                  pb="0.5"
+                  color={`${!isNew ? "gray.300" : "gray.500"}`}
+                >
+                  Usado
+                </Text>
+                {!isNew && isNew !== undefined && (
+                  <XCircle
+                    size={18}
+                    color="white"
+                    weight="fill"
+                    style={{ marginLeft: 6 }}
+                  />
+                )}
+              </HStack>
+            </TouchableOpacity>
+          </HStack>
         </VStack>
         <VStack mt="5">
           <Text color="gray.500" fontFamily="heading" fontSize="16">

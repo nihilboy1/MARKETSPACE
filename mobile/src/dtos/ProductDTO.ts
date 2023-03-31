@@ -5,7 +5,7 @@ export type paymentMethodsProps = {
 };
 
 export type productImages = {
-  uri: string;
+  path: string;
   id: string;
   type: string;
 };

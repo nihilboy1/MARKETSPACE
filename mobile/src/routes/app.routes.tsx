@@ -3,10 +3,9 @@ import {
   NativeStackNavigationProp,
   createNativeStackNavigator,
 } from "@react-navigation/native-stack";
-import { AdDetails } from "@screens/AdDetails";
+import { Ad } from "@screens/Ad";
 import { AdPreview } from "@screens/AdPreview";
 import { CreateAd } from "@screens/CreateAd";
-import { ProductDetails } from "@screens/ProductDetails";
 import { HomeTabs } from "./appTabs.routes";
 
 type AppRoutes = {
@@ -23,7 +22,7 @@ type AppRoutes = {
     isNew: boolean;
     acceptTrade: boolean;
   };
-  adDetails: { id: string };
+  ad: { id: string };
 };
 
 export type AppNavigatorRoutesProps = NativeStackNavigationProp<AppRoutes>;
@@ -34,10 +33,10 @@ export function AppRoutes() {
   return (
     <Navigator screenOptions={{ headerShown: false }}>
       <Screen name="stackHome" component={HomeTabs} />
-      <Screen name="productDetails" component={ProductDetails} />
+      <Screen name="productDetails" component={Ad} />
       <Screen name="createAd" component={CreateAd} />
       <Screen name="adPreview" component={AdPreview} />
-      <Screen name="adDetails" component={AdDetails} />
+      <Screen name="ad" component={Ad} />
     </Navigator>
   );
 }

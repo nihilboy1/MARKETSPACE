@@ -1,6 +1,10 @@
 import DefaultAvatar from "@assets/default-avatar.svg";
 import { Carousel } from "@components/Carousel";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { Box, HStack, ScrollView, Text, VStack, useTheme } from "native-base";
 import {
   ArrowLeft,
@@ -14,15 +18,21 @@ import {
 
 import { Button } from "@components/Button";
 import { ProductDTO } from "@dtos/ProductDTO";
+import { api } from "@services/api";
+import { ErrorToast } from "@utils/ErrorToast";
+import { useCallback, useState } from "react";
 import { Linking, TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type AdDetailRouteParams = {
-  data: ProductDTO;
+  id: string;
 };
 
-export function ProductDetails() {
+export function Ad() {
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [product, setProduct] = useState<ProductDTO>([] as any);
+
   const { colors, sizes } = useTheme();
   const avatarSize = sizes[8];
 
@@ -33,7 +43,26 @@ export function ProductDetails() {
   const route = useRoute();
   const { goBack } = useNavigation();
 
-  const { data } = route.params as AdDetailRouteParams;
+  const { id } = route.params as AdDetailRouteParams;
+
+  async function fetchProducts() {
+    try {
+      setIsLoadingProducts(true);
+      const response = await api.get(`/users/products/${id}`);
+      console.log(response.data);
+      setProduct(response.data);
+    } catch (error) {
+      ErrorToast(error);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, [])
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[200] }}>
@@ -49,7 +78,7 @@ export function ProductDetails() {
         </Text>
         <ArrowLeft style={{ opacity: 0 }} />
       </HStack>
-      <Carousel productImages={data.product_images} />
+      <Carousel productImages={[]} />
       <ScrollView padding="8" flex="1">
         <HStack alignItems="center">
           <DefaultAvatar width={avatarSize} height={avatarSize} />
@@ -71,12 +100,12 @@ export function ProductDetails() {
             textAlign="center"
             color="gray.600"
           >
-            {data.is_new ? "NOVO" : "USADO"}
+            {product.is_new ? "Novo" : "Usado"}
           </Text>
         </Box>
         <HStack alignItems="center" justifyContent="space-between" my="4">
           <Text fontSize="22" fontWeight="bold" color="gray.700">
-            {data.name}
+            {"Nome"}
           </Text>
           <HStack alignItems="center">
             <Text
@@ -89,7 +118,7 @@ export function ProductDetails() {
               R$
             </Text>
             <Text fontSize="26" fontWeight="bold" color="blue.400">
-              {data.price}
+              {"Preço"}
             </Text>
           </HStack>
         </HStack>
@@ -155,7 +184,7 @@ export function ProductDetails() {
             R$
           </Text>
           <Text fontSize="26" fontWeight="bold" color="blue.400">
-            {data.price}
+            {"Preço"}
           </Text>
         </HStack>
         <Button

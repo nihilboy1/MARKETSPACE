@@ -27,7 +27,7 @@ export function Carousel({ productImages }: CarouselProps) {
             <Image
               alt="Imagem do produto"
               source={{
-                uri: item.uri,
+                uri: item.path,
               }}
               w="full"
               h="full"

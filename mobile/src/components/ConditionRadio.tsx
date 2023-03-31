@@ -25,7 +25,7 @@ export function ConditionRadio({
           borderRadius: 22,
           minWidth: 60,
           marginRight: 15,
-          backgroundColor: `${isNew === undefined && colors.gray[200]}`,
+          backgroundColor: `${colors.gray[200]}`,
         }}
       >
         <HStack alignItems="center">
@@ -33,7 +33,7 @@ export function ConditionRadio({
             fontFamily="heading"
             textAlign="center"
             pb="0.5"
-            color={`${isNew === undefined && colors.gray[500]}`}
+            color={colors.gray[500]}
           >
             Não definido
           </Text>

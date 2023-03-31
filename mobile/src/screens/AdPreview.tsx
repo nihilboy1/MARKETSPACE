@@ -86,7 +86,7 @@ export function AdPreview() {
         },
       });
 
-      navigate("adDetails", {
+      navigate("ad", {
         id: product.data.id,
       });
     } catch (error) {
