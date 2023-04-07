@@ -10,6 +10,7 @@ import {
 import { Ad } from "@screens/Ad";
 import { AdPreview } from "@screens/AdPreview";
 import { CreateAd } from "@screens/CreateAd";
+import { MyAd } from "@screens/MyAd";
 import { HomeTabs } from "./appTabs.routes";
 
 type AppRoutes = {
@@ -27,6 +28,7 @@ type AppRoutes = {
     acceptTrade: boolean;
   };
   ad: { id: string };
+  myAd: { id: string };
 };
 
 export type AppNavigatorRoutesProps = NativeStackNavigationProp<AppRoutes>;
@@ -41,6 +43,7 @@ export function AppRoutes() {
       <Screen name="createAd" component={CreateAd} />
       <Screen name="adPreview" component={AdPreview} />
       <Screen name="ad" component={Ad} />
+      <Screen name="myAd" component={MyAd}></Screen>
     </Navigator>
   );
 }

@@ -1,4 +1,4 @@
-import { paymentMethodsProps } from "@dtos/ProductDTO";
+import { paymentMethodsProps } from "@screens/Home";
 import {
   Box,
   HStack,
@@ -13,21 +13,35 @@ import { TouchableOpacity } from "react-native";
 import { Button } from "./Button";
 import { ConditionRadio } from "./ConditionRadio";
 
+export const paymentMethodsData: paymentMethodsProps[] = [
+  "cash",
+  "pix",
+  "boleto",
+  "card",
+  "deposit",
+];
+
 interface HomeFilterModalProp {
-  openFilterModal: boolean;
-  isNew: boolean | undefined;
-  paymentOptionsCheckBox: paymentMethodsProps[];
-  setPaymentOptionsCheckBox: (value: paymentMethodsProps[]) => void;
+  setPaymentMethods(value: paymentMethodsProps[]): void;
+  paymentMethods: paymentMethodsProps[];
+
   setIsNew(value: boolean | undefined): void;
-  acceptTrade: boolean | undefined;
+  isNew: boolean | undefined;
+
   setAcceptTrade(value: boolean | undefined): void;
+  acceptTrade: boolean | undefined;
+
   setOpenFilterModal: (value: boolean) => void;
-  applyFilters: any;
-  resetFilters: any;
+  openFilterModal: boolean;
+
+  applyFilters: () => void;
+  resetFilters: () => void;
 }
 
 export function HomeFilterModal({
   openFilterModal,
+  setPaymentMethods,
+  paymentMethods,
   resetFilters,
   isNew,
   setIsNew,
@@ -35,20 +49,9 @@ export function HomeFilterModal({
   setAcceptTrade,
   setOpenFilterModal,
   applyFilters,
-  paymentOptionsCheckBox,
-  setPaymentOptionsCheckBox,
 }: HomeFilterModalProp) {
-  const handleSetPaymentOptions = (id: number) => {
-    const updatedOptions = paymentOptionsCheckBox.map((option, i) => {
-      if (i === id - 1) {
-        return { ...option, checked: !option.checked };
-      }
-      return option;
-    });
-    setPaymentOptionsCheckBox(updatedOptions);
-  };
-
   const { sizes, colors } = useTheme();
+
   function handleAcceptTrade() {
     if (acceptTrade === undefined) {
       setAcceptTrade(false);
@@ -58,6 +61,22 @@ export function HomeFilterModal({
       setAcceptTrade(undefined);
     }
   }
+
+  function handleSetPaymentMethods(method: paymentMethodsProps) {
+    const isTheMethodAlreadyRegistered = paymentMethods.includes(method);
+    if (isTheMethodAlreadyRegistered) {
+      const newRegisteredMethods = paymentMethods.filter((registeredMethod) => {
+        if (registeredMethod !== method) {
+          return registeredMethod;
+        }
+        return;
+      });
+      setPaymentMethods(newRegisteredMethods);
+    } else {
+      setPaymentMethods([...paymentMethods, method]);
+    }
+  }
+
   return (
     <Modal
       animationPreset="slide"
@@ -136,19 +155,19 @@ export function HomeFilterModal({
               Meios de pagamento aceitos
             </Text>
             <VStack>
-              {paymentOptionsCheckBox.map((option) => {
+              {paymentMethodsData.map((method) => {
                 return (
                   <TouchableOpacity
                     onPress={() => {
-                      handleSetPaymentOptions(option.id);
+                      handleSetPaymentMethods(method);
                     }}
-                    key={option.id}
+                    key={method}
                     style={{
                       marginBottom: 14,
                     }}
                   >
                     <HStack alignItems="center">
-                      {option.checked ? (
+                      {paymentMethods.includes(method) ? (
                         <CheckSquare
                           weight="fill"
                           size={28}
@@ -158,15 +177,15 @@ export function HomeFilterModal({
                         <Square size={28} color={colors.gray[500]} />
                       )}
                       <Text ml="2" fontSize="18" color="gray.500">
-                        {option.label === "boleto"
+                        {method === "boleto"
                           ? "Boleto"
-                          : option.label === "pix"
+                          : method === "pix"
                           ? "Pix"
-                          : option.label === "cash"
+                          : method === "cash"
                           ? "Dinheiro"
-                          : option.label === "card"
+                          : method === "card"
                           ? "Cartão de crédito"
-                          : option.label === "deposit"
+                          : method === "deposit"
                           ? "Depósito bancário"
                           : ""}
                       </Text>

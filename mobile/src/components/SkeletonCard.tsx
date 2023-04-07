@@ -4,13 +4,19 @@ export function SkeletonCard() {
   return (
     <VStack w="155px">
       <Skeleton
-        w="full"
-        h="100px"
+        h="32"
+        mt="6"
+        flex="1"
         rounded="md"
-        startColor="gray.7"
-        endColor="gray.5"
+        startColor="gray.200"
+        endColor="gray.400"
       />
-      <Skeleton.Text mt={2} lines={2} startColor="gray.7" endColor="gray.5" />
+      <Skeleton.Text
+        mt={1}
+        lines={2}
+        startColor="gray.200"
+        endColor="gray.400"
+      />
     </VStack>
   );
 }

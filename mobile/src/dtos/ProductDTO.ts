@@ -1,4 +1,4 @@
-export type paymentMethodsProps = {
+type paymentMethodsProps = {
   id: number;
   label: string;
   checked: boolean;
@@ -6,8 +6,9 @@ export type paymentMethodsProps = {
 };
 
 export type productImagesProps = {
+  uri?: string;
   path: string;
-  id: string;
+  name: string;
   type: string;
 };
 

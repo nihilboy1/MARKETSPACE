@@ -27,12 +27,12 @@ import { Linking, TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type AdDetailRouteParams = {
+type AdRouteParams = {
   id: string;
 };
 
 export function Ad() {
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(true);
   const [product, setProduct] = useState<ProductDTO>([] as any);
   const toast = useToast();
 
@@ -46,12 +46,11 @@ export function Ad() {
   const route = useRoute();
   const { goBack } = useNavigation();
 
-  const { id } = route.params as AdDetailRouteParams;
-  console.log(id);
+  const { id } = route.params as AdRouteParams;
 
-  async function fetchProducts() {
+  async function fetchProduct() {
     try {
-      setIsLoadingProducts(true);
+      setIsLoadingProduct(true);
       const response = await api.get(`/products/${id}`);
       setProduct(response.data);
     } catch (error) {
@@ -68,13 +67,13 @@ export function Ad() {
         });
       }
     } finally {
-      setIsLoadingProducts(false);
+      setIsLoadingProduct(false);
     }
   }
 
   useFocusEffect(
     useCallback(() => {
-      fetchProducts();
+      fetchProduct();
     }, [])
   );
 
@@ -92,7 +91,7 @@ export function Ad() {
         </Text>
         <ArrowLeft style={{ opacity: 0 }} />
       </HStack>
-      {isLoadingProducts ? (
+      {isLoadingProduct ? (
         <Loading />
       ) : (
         <>

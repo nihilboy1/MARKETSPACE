@@ -38,7 +38,6 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   async function localStoreUserAndToken(user: UserDTO, token: string) {
     try {
       setIsLoadingUserData(true);
-
       await localStoreUser(user);
       await localStoreToken(token);
     } catch (error) {
@@ -52,6 +51,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     try {
       const { data } = await api.post("/sessions/", { email, password });
       if (data.user && data.token) {
+        console.log(data.token);
         await localStoreUserAndToken(data.user, data.token);
         userAndTokenUpdate(data.user, data.token);
       }
@@ -78,9 +78,9 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       setIsLoadingUserData(true);
       const loggedInUser = await localGetUser();
       const token = await localGetToken();
-      console.log(token);
       if (loggedInUser && token) {
         userAndTokenUpdate(loggedInUser, token);
+        console.log(token);
       }
     } catch (error) {
       throw error;

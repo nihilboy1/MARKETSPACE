@@ -1,91 +1,58 @@
-import { useEffect, useState } from "react";
-import { Dimensions, StatusBar } from "react-native";
-
+import { Carousel } from "@components/Carousel";
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import {
   Box,
   HStack,
-  Heading,
   Image,
-  Button as NativeButton,
   ScrollView,
   Text,
   VStack,
   useTheme,
   useToast,
 } from "native-base";
-
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { AppNavigatorRoutesProps } from "@routes/app.routes";
+import { ArrowLeft, PencilLine, Power, Trash } from "phosphor-react-native";
 
 import { Button } from "@components/Button";
 import { Loading } from "@components/Loading";
-
-import { ArrowLeft, Pencil, Power, Trash } from "phosphor-react-native";
-
-import { ProductDTO } from "../dtos/ProductDTO";
-
+import { PaymentMethodsComponent } from "@components/PaymentMethods";
+import { ProductDTO } from "@dtos/ProductDTO";
 import { api } from "@services/api";
 import { AppError } from "@utils/AppError";
+import { useCallback, useState } from "react";
+import { TouchableOpacity } from "react-native";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import Carousel from "react-native-reanimated-carousel";
-
-type RouteParams = {
+type MyAdRouteParams = {
   id: string;
 };
 
-export const MyAd = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDeletingLoading, setIsDeletingLoading] = useState(false);
-  const [isChangingVisibilityLoading, setIsChangingVisibilityLoading] =
-    useState(false);
-  const [product, setProduct] = useState({} as ProductDTO);
-
-  const width = Dimensions.get("window").width;
-
-  const { colors } = useTheme();
-
-  const route = useRoute();
+export function MyAd() {
+  const [isLoadingProduct, setIsLoadingProduct] = useState(true);
+  const [product, setProduct] = useState<ProductDTO>([] as any);
+  const [adIsActive, setAdIsActive] = useState(true);
   const toast = useToast();
+  const { colors, sizes } = useTheme();
+  const avatarSize = sizes[2.5];
+  const route = useRoute();
+  const { goBack } = useNavigation();
 
-  const { id } = route.params as RouteParams;
+  const { id } = route.params as MyAdRouteParams;
 
-  const navigation = useNavigation<AppNavigatorRoutesProps>();
-
-  const handleGoBack = () => {
-    navigation.navigate("app", { screen: "myads" });
-  };
-
-  const handleGoEditAd = () => {
-    navigation.navigate("editad", {
-      title: product.name,
-      description: product.description,
-      price: product.price.toString(),
-      images: product.product_images,
-      paymentMethods: product.payment_methods.map((item) => item.key),
-      isNew: product.is_new,
-      acceptTrade: product.accept_trade,
-      id: product.id,
-    });
-  };
-
-  const handleChangeAdVisibility = async () => {
+  async function fetchProduct() {
     try {
-      setIsChangingVisibilityLoading(true);
-      const data = await api.patch(`products/${id}`, {
-        is_active: !product.is_active,
-      });
-
-      setProduct((state) => {
-        return {
-          ...state,
-          is_active: !state.is_active,
-        };
-      });
+      setIsLoadingProduct(true);
+      const response = await api.get(`/products/${id}`);
+      setProduct(response.data);
     } catch (error) {
       const isAppError = error instanceof AppError;
       const title = isAppError
         ? error.message
-        : "Não foi possível deletar. Tente Novamente!";
+        : "Não foi possível receber os dados do anúncio. Tente Novamente!";
 
       if (isAppError) {
         toast.show({
@@ -95,198 +62,140 @@ export const MyAd = () => {
         });
       }
     } finally {
-      setIsChangingVisibilityLoading(false);
+      setIsLoadingProduct(false);
     }
-  };
+  }
 
-  const handleDeleteAd = async () => {
-    try {
-      setIsDeletingLoading(true);
-      await api.delete(`products/${id}`);
-
-      navigation.navigate("app", { screen: "myads" });
-    } catch (error) {
-      const isAppError = error instanceof AppError;
-      const title = isAppError
-        ? error.message
-        : "Não foi possível deletar. Tente Novamente!";
-
-      if (isAppError) {
-        toast.show({
-          title,
-          placement: "top",
-          bgColor: "red.500",
-        });
-      }
-    }
-  };
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const productData = await api.get(`products/${id}`);
-        setProduct(productData.data);
-        setIsLoading(false);
-      } catch (error) {
-        const isAppError = error instanceof AppError;
-        const title = isAppError
-          ? error.message
-          : "Não foi possível receber os dados do anúncio. Tente Novamente!";
-
-        if (isAppError) {
-          toast.show({
-            title,
-            placement: "top",
-            bgColor: "red.500",
-          });
-        }
-      }
-    };
-
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProduct();
+    }, [])
+  );
 
   return (
-    <>
-      <StatusBar backgroundColor={colors.gray[600]} />
-      {isLoading ? (
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[200] }}>
+      <HStack p="4" mt="1" justifyContent="space-between">
+        <TouchableOpacity
+          onPress={goBack}
+          hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
+        >
+          <ArrowLeft />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {}}
+          hitSlop={{ top: 22, bottom: 22, left: 22, right: 22 }}
+        >
+          <PencilLine />
+        </TouchableOpacity>
+      </HStack>
+      {isLoadingProduct ? (
         <Loading />
       ) : (
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <VStack flex={1}>
-            <HStack w="full" justifyContent="space-between" mt={10}>
-              <NativeButton variant="secondary" px={5} onPress={handleGoBack}>
-                <ArrowLeft color={colors.gray[200]} />
-              </NativeButton>
-
-              <NativeButton variant="secondary" px={5} onPress={handleGoEditAd}>
-                <Pencil color={colors.gray[200]} />
-              </NativeButton>
-            </HStack>
-
-            <Box
-              position="relative"
-              alignItems="center"
-              justifyContent="center"
-            >
-              {!product.is_active && (
-                <Heading
-                  flex={1}
-                  textTransform="uppercase"
-                  color="white"
-                  fontSize="lg"
-                  position="absolute"
-                  zIndex={100}
-                  bg="gray.300"
-                  p={1}
-                  w={240}
-                  textAlign="center"
-                  borderRadius={10}
-                >
-                  Anúncio Desativado
-                </Heading>
-              )}
-              <Carousel
-                loop
-                width={width}
-                height={320}
-                autoPlay={product.product_images.length > 1}
-                data={product.product_images}
-                scrollAnimationDuration={1000}
-                renderItem={({ item }) => (
-                  <Image
-                    blurRadius={product.is_active ? 0 : 10}
-                    w="full"
-                    h={80}
-                    source={{
-                      uri: `${api.defaults.baseURL}/images/${item.path}`,
-                    }}
-                    alt="Ad Image"
-                    resizeMode="cover"
-                    borderColor="gray.300"
-                    borderWidth={1}
-                  />
-                )}
+        <>
+          <Carousel
+            productImages={product.product_images}
+            adIsActive={adIsActive}
+          />
+          <ScrollView padding="8" flex="1">
+            <HStack alignItems="center">
+              <Image
+                alt="Avatar do dono do anúncio"
+                source={{
+                  uri: `${api.defaults.baseURL}/images/${product.user.avatar}`,
+                }}
+                width={avatarSize}
+                height={avatarSize}
+                resizeMode="cover"
+                borderRadius="full"
+                borderWidth="3"
+                borderColor="blue.400"
               />
-            </Box>
-
-            <VStack px={5}>
-              <Heading
-                my={2}
-                textTransform="uppercase"
-                color="blue.default"
-                fontSize={14}
-                mt={4}
+              <Text ml="3" fontSize="16" color="gray.700">
+                {product.user.name}
+              </Text>
+            </HStack>
+            <Box
+              w="18"
+              mt="5"
+              px="1.5"
+              py="1"
+              borderRadius="full"
+              bgColor="gray.300"
+            >
+              <Text
+                fontFamily="heading"
+                fontSize="16"
+                textAlign="center"
+                color="gray.500"
+                letterSpacing="1"
               >
                 {product.is_new ? "NOVO" : "USADO"}
-              </Heading>
-              <HStack
-                w="full"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Heading color="gray.200" fontSize={22} fontFamily="heading">
-                  {product.name}
-                </Heading>
-                <Text color="blue.light" fontFamily="heading">
-                  R${" "}
-                  <Heading
-                    color="blue.light"
-                    fontFamily="heading"
-                    fontSize={20}
-                  >
-                    {product.price}
-                  </Heading>
+              </Text>
+            </Box>
+            <HStack alignItems="center" justifyContent="space-between" my="4">
+              <Text fontSize="22" fontWeight="bold" color="gray.700">
+                {product.name}
+              </Text>
+              <HStack alignItems="center">
+                <Text
+                  fontSize="16"
+                  fontWeight="bold"
+                  color="blue.400"
+                  pt="1.5"
+                  pr="1.5"
+                >
+                  R$
+                </Text>
+                <Text fontSize="26" fontWeight="bold" color="blue.400">
+                  {product.price}
                 </Text>
               </HStack>
-
-              <Text mt={2} color="gray.300">
-                {product.description}
+            </HStack>
+            <Text fontSize="15">{product.description}</Text>
+            <HStack my="4">
+              <Text fontFamily="heading" fontSize="16" color="gray.500">
+                Aceita troca?
               </Text>
-
-              <Heading color="gray.300" fontSize={14} my={5}>
-                Aceita troca?{" "}
-                <Text fontWeight="normal">
-                  {product.accept_trade ? "Sim" : "Não"}
-                </Text>
-              </Heading>
-
-              <Heading color="gray.300" fontSize={14} mb={2}>
-                Meios de Pagamento:
-              </Heading>
-
-              {GeneratePaymentMethods(
-                product.payment_methods.map(
-                  (payment_method) => payment_method.key
-                ),
-                colors.gray[300]
-              )}
-            </VStack>
-
-            <VStack px={5} my={5}>
-              <Button
-                title={
-                  product.is_active ? "Desativar Anúncio" : "Ativar Anúncio"
-                }
-                onPress={handleChangeAdVisibility}
-                icon={<Power size={22} color="white" />}
-                mb={2}
-                isLoading={isChangingVisibilityLoading}
-              />
-              <Button
-                title="Excluir Anúncio"
-                variant="secondary"
-                icon={<Trash size={22} color="white" />}
-                onPress={handleDeleteAd}
-                isLoading={isDeletingLoading}
+              <Text fontSize="16" color="black" ml="2.5" fontFamily="heading">
+                {product.accept_trade ? "Sim" : "Não"}
+              </Text>
+            </HStack>
+            <VStack minH="230">
+              <Text fontFamily="heading" fontSize="16" color="gray.500" mb="2">
+                Meios de pagamento aceitos
+              </Text>
+              <PaymentMethodsComponent
+                paymentMethods={product.payment_methods.map((item) => {
+                  return item.key;
+                })}
               />
             </VStack>
+          </ScrollView>
+          <VStack bg="white" p="5" justifyContent="space-between">
+            <Button
+              mb="2"
+              onPress={() => setAdIsActive(!adIsActive)}
+              title={adIsActive ? "Desativar anúncio" : "Reativar anúncio"}
+              variant={adIsActive ? "link" : "solid"}
+              leftIcon={
+                <TouchableWithoutFeedback>
+                  <Power color="white" />
+                </TouchableWithoutFeedback>
+              }
+            />
+            <Button
+              onPress={() => {}}
+              title="Excluir anúncio"
+              variant="ghost"
+              leftIcon={
+                <TouchableWithoutFeedback>
+                  <Trash color="gray" />
+                </TouchableWithoutFeedback>
+              }
+            />
           </VStack>
-        </ScrollView>
+        </>
       )}
-    </>
+    </SafeAreaView>
   );
-};
+}

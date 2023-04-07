@@ -1,4 +1,4 @@
-import { MiniCardAd } from "@components/MiniCardAd";
+import { AdCard } from "@components/AdCard";
 import { ProductDTO } from "@dtos/ProductDTO";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
@@ -10,7 +10,6 @@ import { useCallback, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FAKEDATA } from "../data/data";
 
 export function MyAds() {
   const { navigate } = useNavigation<AppNavigatorRoutesProps>();
@@ -21,13 +20,13 @@ export function MyAds() {
   const [myAdsStateFilter, setMyAdsStateFilter] = useState<
     "todos" | "ativos" | "inativos"
   >("todos");
-  const [postedProducts, setPostedProducts] = useState<ProductDTO[]>(FAKEDATA);
   const { colors, sizes } = useTheme();
 
   async function fetchProducts() {
     try {
       setIsLoadingProducts(true);
       const productsData = await api.get(`/users/products`);
+
       setUserProducts(productsData.data);
       setProductsAmount(productsData.data.length);
     } catch (error) {
@@ -45,6 +44,10 @@ export function MyAds() {
 
   function moveToCreateAd() {
     navigate("createAd");
+  }
+
+  function moveToMyAd(id: string) {
+    navigate("myAd", { id });
   }
 
   return (
@@ -99,9 +102,9 @@ export function MyAds() {
           paddingBottom: 90,
         }}
         renderItem={({ item }) => (
-          <MiniCardAd
+          <AdCard
             mini
-            onPress={() => {}}
+            onPress={() => moveToMyAd(item.id)}
             condition={item.is_new}
             thumb={`${api.defaults.baseURL}/images/${item.product_images[0].path}`}
             price={item.price}

@@ -23,10 +23,10 @@ import {
 } from "phosphor-react-native";
 import { useCallback, useState } from "react";
 
+import { AdCard } from "@components/AdCard";
 import { HomeFilterModal } from "@components/HomeFilterModal";
-import { MiniCardAd } from "@components/MiniCardAd";
 import { SkeletonCard } from "@components/SkeletonCard";
-import { ProductDTO, paymentMethodsProps } from "@dtos/ProductDTO";
+import { ProductDTO } from "@dtos/ProductDTO";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthContext } from "@hooks/useAuthContext";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
@@ -42,13 +42,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as yup from "yup";
 
-export const paymentMethodsData = [
-  { id: 1, label: "boleto", checked: false },
-  { id: 2, label: "pix", checked: false },
-  { id: 3, label: "cash", checked: false },
-  { id: 4, label: "card", checked: false },
-  { id: 5, label: "deposit", checked: false },
-];
+export type paymentMethodsProps =
+  | "cash"
+  | "pix"
+  | "boleto"
+  | "card"
+  | "deposit";
+
 const signInSchema = yup.object({
   search: yup.string(),
 });
@@ -59,27 +59,19 @@ export type FormDataProps = {
 
 export function Home() {
   const [products, setProducts] = useState<ProductDTO[]>([]);
-
+  const [paymentMethods, setPaymentMethods] = useState<paymentMethodsProps[]>(
+    []
+  );
   const [filtersAreApplying, setFiltersAreApplying] = useState(false);
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [numerOfAds, setNumerOfAds] = useState(0);
   const [isNew, setIsNew] = useState<boolean | undefined>(undefined);
   const toast = useToast();
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-  const [filterLoading, setFilterLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [acceptTrade, setAcceptTrade] = useState<boolean | undefined>(
     undefined
   );
-  const [paymentOptionsCheckBox, setPaymentOptionsCheckBox] =
-    useState<paymentMethodsProps[]>(paymentMethodsData);
-  const [paymentMethods, setPaymentMethods] = useState([
-    "cash",
-    "pix",
-    "boleto",
-    "card",
-    "deposit",
-  ]);
+
   const { navigate } = useNavigation<AppNavigatorRoutesProps>();
   const { sizes, colors } = useTheme();
   const { userState } = useAuthContext();
@@ -105,7 +97,7 @@ export function Home() {
     navigate("createAd");
   }
 
-  function moveToAdDetails(id: string) {
+  function moveToAd(id: string) {
     navigate("ad", { id });
   }
 
@@ -115,20 +107,32 @@ export function Home() {
 
   async function handleApplyFilters({ search }: FormDataProps) {
     setOpenFilterModal(false);
-    setFiltersAreApplying(true);
-
     try {
       let paymentMethodsQuery = "";
       paymentMethods.forEach((item) => {
-        paymentMethodsQuery = paymentMethodsQuery + `&payment_methods=${item}`;
+        paymentMethodsQuery = paymentMethodsQuery + `payment_methods=${item}&`;
       });
+      let questionMark = `${
+        search.length > 0 ||
+        isNew !== undefined ||
+        acceptTrade !== undefined ||
+        paymentMethodsQuery.length > 0
+          ? "?"
+          : ""
+      }`;
 
-      setFilterLoading(true);
-      const productsData = await api.get(
-        `/products/?${isNew !== undefined ? `is_new=${isNew}` : ""}${
-          acceptTrade !== undefined ? `&accept_trade=${acceptTrade}` : ""
-        }${paymentMethodsQuery}${search.length > 0 && `&query=${search}`}`
-      );
+      setFiltersAreApplying(questionMark.length > 0 ? true : false);
+
+      let isNewQuery = `${isNew !== undefined ? `is_new=${isNew}&` : ""}`;
+      let searchQuery = `${search.length > 0 ? `query=${search}` : ""}`;
+      let acceptTradeQuery = `${
+        acceptTrade !== undefined ? `accept_trade=${acceptTrade}&` : ""
+      }`;
+
+      let baseQuery = `/products/${questionMark}${isNewQuery}${acceptTradeQuery}${paymentMethodsQuery}${searchQuery}`;
+
+      setIsLoadingProducts(true);
+      const productsData = await api.get(baseQuery);
       setProducts(productsData.data);
     } catch (error) {
       const isAppError = error instanceof AppError;
@@ -144,39 +148,30 @@ export function Home() {
         });
       }
     } finally {
-      setFilterLoading(false);
+      setIsLoadingProducts(false);
     }
   }
 
-  async function handleSetPaymentOptions() {
-    const updatedOptions = paymentOptionsCheckBox.map((option, i) => {
-      return { ...option, checked: false };
-    });
-    setPaymentOptionsCheckBox(updatedOptions);
-  }
-
   async function handleFiltersReset() {
-    setPaymentMethods(["cash", "pix", "boleto", "card", "deposit"]);
-    handleSetPaymentOptions();
+    setPaymentMethods([]);
     setAcceptTrade(undefined);
     setIsNew(undefined);
-    const generalProductsData = await api.get("/products");
-    setProducts(generalProductsData.data);
+    const res = await api.get("/products");
+    setProducts(res.data);
     setFiltersAreApplying(false);
   }
 
   async function fetchProducts() {
     try {
       setIsLoadingProducts(true);
-      const productsData = await api.get(`/users/products`);
-      const generalProductsData = await api.get("/products");
-      setProducts(generalProductsData.data);
-      setNumerOfAds(productsData.data.length);
+      const userProductsResponse = await api.get(`/users/products`);
+      const generalProductsResponse = await api.get("/products");
+      setProducts(generalProductsResponse.data);
+      setNumerOfAds(userProductsResponse.data.length);
     } catch (error) {
       ErrorToast(error);
     } finally {
       setIsLoadingProducts(false);
-      setIsLoading(false);
     }
   }
 
@@ -235,7 +230,12 @@ export function Home() {
           />
         </HStack>
         <VStack marginTop="8">
-          <Text fontSize={16} color="gray.500" marginBottom="4">
+          <Text
+            fontSize={16}
+            color="gray.500"
+            marginBottom="2"
+            textAlign="center"
+          >
             Seus produtos anunciados para venda
           </Text>
           <TouchableOpacity
@@ -279,9 +279,14 @@ export function Home() {
             </HStack>
           </TouchableOpacity>
         </VStack>
-        <VStack marginTop="8">
-          <Text fontSize={16} color="gray.500" marginBottom="4">
-            Seus produtos anunciados para venda
+        <VStack marginTop="2">
+          <Text
+            fontSize={16}
+            color="gray.500"
+            marginBottom="2"
+            textAlign="center"
+          >
+            Compre produtos variados
           </Text>
           <HStack alignItems="center">
             <Controller
@@ -341,9 +346,9 @@ export function Home() {
           renderItem={({ item }) => {
             if (!isLoadingProducts) {
               return (
-                <MiniCardAd
+                <AdCard
                   mini
-                  onPress={() => moveToAdDetails(item.id)}
+                  onPress={() => moveToAd(item.id)}
                   condition={item.is_new}
                   thumb={`${api.defaults.baseURL}/images/${item.product_images[0].path}`}
                   price={item.price}
@@ -358,7 +363,7 @@ export function Home() {
               alignItems="center"
               justifyContent="center"
               flex={1}
-              mt={16}
+              mt="24"
             >
               <LogoSvg />
               <Text fontFamily="body" color="gray.4" fontSize="md" mt="4">
@@ -376,8 +381,8 @@ export function Home() {
           acceptTrade={acceptTrade}
           setAcceptTrade={setAcceptTrade}
           resetFilters={handleFiltersReset}
-          setPaymentOptionsCheckBox={setPaymentOptionsCheckBox}
-          paymentOptionsCheckBox={paymentOptionsCheckBox}
+          paymentMethods={paymentMethods}
+          setPaymentMethods={setPaymentMethods}
         />
       </SafeAreaView>
     </TouchableWithoutFeedback>

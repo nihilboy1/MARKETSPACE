@@ -1,9 +1,7 @@
-import DefaultAvatar from "@assets/default-avatar.svg";
 import { Button } from "@components/Button";
 import { Carousel } from "@components/Carousel";
 import { Loading } from "@components/Loading";
 import { PaymentMethodsComponent } from "@components/PaymentMethods";
-import { paymentMethodsProps } from "@dtos/ProductDTO";
 import { useAuthContext } from "@hooks/useAuthContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
@@ -12,6 +10,7 @@ import { AppError } from "@utils/AppError";
 import {
   Box,
   HStack,
+  Image,
   ScrollView,
   Text,
   VStack,
@@ -19,9 +18,10 @@ import {
   useToast,
 } from "native-base";
 import { ArrowLeft, Tag } from "phosphor-react-native";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { TouchableWithoutFeedback } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { paymentMethodsProps } from "./Home";
 
 type RouteParams = {
   title: string;
@@ -37,9 +37,6 @@ export function AdPreview() {
   const { navigate, goBack } = useNavigation<AppNavigatorRoutesProps>();
   const { colors, fonts, sizes } = useTheme();
   const [publishLoading, setPublishLoading] = useState(false);
-  const [checkedPaymentMethods, setCheckedPaymentMethods] = useState<string[]>(
-    []
-  );
   const toast = useToast();
   const containerPadding = sizes[8];
   const avatarSize = sizes[8];
@@ -57,38 +54,28 @@ export function AdPreview() {
 
   async function handlePublish() {
     setPublishLoading(true);
-
     try {
       const product = await api.post("/products", {
         name: title,
         description,
-        price,
-        payment_methods: checkedPaymentMethods,
+        price: parseInt(price.replace(/[^0-9]+/g, "")),
+        payment_methods: paymentMethods,
         is_new: isNew,
         accept_trade: acceptTrade,
       });
-
       const imageData = new FormData();
-
       productPhotos.forEach((item) => {
         const imageFile = {
           ...item,
-          name: userState.name + "." + item.name,
+          id: userState.name + "." + item.id,
         } as any;
-
         imageData.append("images", imageFile);
       });
-
       imageData.append("product_id", product.data.id);
-
-      const imagesData = await api.post("/products/images", imageData, {
+      const res = await api.post("/products/images", imageData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      });
-
-      navigate("ad", {
-        id: product.data.id,
       });
     } catch (error) {
       const isAppError = error instanceof AppError;
@@ -107,21 +94,6 @@ export function AdPreview() {
       setPublishLoading(false);
     }
   }
-
-  function filterPaymentMethods() {
-    const checkedPaymentMethods = paymentMethods
-      .filter((method) => {
-        return method.checked;
-      })
-      .map((method) => {
-        return method.label;
-      });
-    setCheckedPaymentMethods(checkedPaymentMethods);
-  }
-
-  useEffect(() => {
-    filterPaymentMethods();
-  }, []);
 
   return (
     <SafeAreaView
@@ -144,10 +116,26 @@ export function AdPreview() {
           </VStack>
           <ScrollView p="8" flex="1" bgColor="white">
             <HStack alignItems="center">
-              <DefaultAvatar width={avatarSize} height={avatarSize} />
-              <Text ml="3" fontSize="16" color="gray.700">
-                Makenna Baptista
-              </Text>
+              <Box
+                borderWidth="3"
+                borderColor="blue.400"
+                overflow="hidden"
+                borderRadius="full"
+              >
+                <Image
+                  alt="Foto do usuário"
+                  source={{
+                    uri: `${api.defaults.baseURL}/images/${userState.avatar}`,
+                  }}
+                  size={8}
+                />
+              </Box>
+
+              <VStack ml="2">
+                <Text fontFamily="heading" fontSize={18}>
+                  {userState.name}
+                </Text>
+              </VStack>
             </HStack>
             <HStack justifyContent="space-between" alignItems="center" mt="5">
               <Box
@@ -199,7 +187,7 @@ export function AdPreview() {
               <Text fontFamily="heading" fontSize="16" color="gray.500" mb="2">
                 Meios de pagamento aceitos
               </Text>
-              <PaymentMethodsComponent paymentMethods={checkedPaymentMethods} />
+              <PaymentMethodsComponent paymentMethods={paymentMethods} />
             </VStack>
           </ScrollView>
           <HStack bg="white" p="5" justifyContent="space-between">

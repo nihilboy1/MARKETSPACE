@@ -1,7 +1,7 @@
 import { Button } from "@components/Button";
 import { Input } from "@components/Input";
 import * as ImagePicker from "expo-image-picker";
-import { paymentMethodsData } from "./Home";
+import { paymentMethodsProps } from "./Home";
 
 import { useNavigation } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
@@ -20,7 +20,7 @@ import {
 } from "native-base";
 import * as yup from "yup";
 
-import { paymentMethodsProps, productImagesProps } from "@dtos/ProductDTO";
+import { paymentMethodsData } from "@components/HomeFilterModal";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
   ArrowLeft,
@@ -53,10 +53,11 @@ type FormDataProps = {
 export function CreateAd() {
   const [isNew, setIsNew] = useState<boolean | undefined>(true);
   const [acceptTrade, setAcceptTrade] = useState(false);
-  const [productPhotos, setProductPhotos] = useState<productImagesProps[]>([]);
+  const [productPhotos, setProductPhotos] = useState<any[]>([]);
   const [productPhotoIsLoading, setProductPhotoIsLoading] = useState(false);
-  const [paymentMethods, setpaymentMethods] =
-    useState<paymentMethodsProps[]>(paymentMethodsData);
+  const [paymentMethods, setPaymentMethods] = useState<paymentMethodsProps[]>(
+    []
+  );
   const { navigate, goBack } = useNavigation<AppNavigatorRoutesProps>();
   const { colors, fonts } = useTheme();
   const toast = useToast();
@@ -108,10 +109,10 @@ export function CreateAd() {
         const fileExtension = photoSelected.assets[0].uri.split(".").pop();
 
         const photoFile = {
-          id: `${fileExtension}`.toLowerCase(),
-          path: photoSelected.assets[0].uri,
+          name: `${fileExtension}`.toLowerCase(),
+          uri: photoSelected.assets[0].uri,
           type: `${photoSelected.assets[0].type}/${fileExtension}`,
-        } as productImagesProps;
+        } as any;
 
         setProductPhotos((images) => {
           return [...images, photoFile];
@@ -141,14 +142,19 @@ export function CreateAd() {
     }
   }
 
-  function handleSetpaymentMethods(id: number) {
-    const updatedOptions = paymentMethods.map((option, i) => {
-      if (i === id - 1) {
-        return { ...option, checked: !option.checked };
-      }
-      return option;
-    });
-    setpaymentMethods(updatedOptions);
+  function handleSetPaymentMethods(method: paymentMethodsProps) {
+    const isTheMethodAlreadyRegistered = paymentMethods.includes(method);
+    if (isTheMethodAlreadyRegistered) {
+      const newRegisteredMethods = paymentMethods.filter((registeredMethod) => {
+        if (registeredMethod !== method) {
+          return registeredMethod;
+        }
+        return;
+      });
+      setPaymentMethods(newRegisteredMethods);
+    } else {
+      setPaymentMethods([...paymentMethods, method]);
+    }
   }
 
   function removeProductPhoto(index: number) {
@@ -173,8 +179,6 @@ export function CreateAd() {
         bgColor: "red.500",
       });
     }
-
-    console.log(price);
 
     if (isNew === true || isNew === false) {
       navigate("adPreview", {
@@ -215,7 +219,7 @@ export function CreateAd() {
           <HStack mt="2" w="full" flexWrap="wrap">
             {productPhotos.length > 0 &&
               productPhotos.map((image, index) => (
-                <Box mr="2" mt="2" key={image.path}>
+                <Box mr="2" mt="2" key={image.uri}>
                   <TouchableOpacity
                     onPress={() => removeProductPhoto(index)}
                     hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
@@ -235,7 +239,7 @@ export function CreateAd() {
                     w="20"
                     h="20"
                     source={{
-                      uri: image.path,
+                      uri: image.uri,
                     }}
                     alt="Imagem do novo anúncio"
                     resizeMode="cover"
@@ -379,6 +383,7 @@ export function CreateAd() {
               <>
                 <TextInputMask
                   type={"money"}
+                  maxLength={9}
                   style={{
                     backgroundColor: "white",
                     paddingHorizontal: 10,
@@ -440,38 +445,38 @@ export function CreateAd() {
             Meios de pagamento aceitos
           </Text>
           <VStack>
-            {paymentMethods.map((option) => {
+            {paymentMethodsData.map((method) => {
               return (
                 <TouchableOpacity
                   onPress={() => {
-                    handleSetpaymentMethods(option.id);
+                    handleSetPaymentMethods(method);
                   }}
-                  key={option.id}
+                  key={method}
                   style={{
                     marginBottom: 14,
                   }}
                 >
                   <HStack alignItems="center">
-                    {option.checked ? (
+                    {paymentMethods.includes(method) ? (
                       <CheckSquare
                         weight="fill"
-                        size={24}
+                        size={28}
                         color={colors.blue[400]}
                       />
                     ) : (
-                      <Square size={24} color={colors.gray[500]} />
+                      <Square size={28} color={colors.gray[500]} />
                     )}
-                    <Text ml="2" fontSize="16" color="gray.500">
-                      {option.label === "boleto"
+                    <Text ml="2" fontSize="18" color="gray.500">
+                      {method === "boleto"
                         ? "Boleto"
-                        : option.label === "pix"
+                        : method === "pix"
                         ? "Pix"
-                        : option.label === "card"
-                        ? "Cartão de crédito"
-                        : option.label === "deposit"
-                        ? "Depósito bancário"
-                        : option.label === "cash"
+                        : method === "cash"
                         ? "Dinheiro"
+                        : method === "card"
+                        ? "Cartão de crédito"
+                        : method === "deposit"
+                        ? "Depósito bancário"
                         : ""}
                     </Text>
                   </HStack>

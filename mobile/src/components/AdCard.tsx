@@ -10,7 +10,7 @@ type Props = TouchableOpacityProps & {
   mini: boolean;
 };
 
-export function MiniCardAd({
+export function AdCard({
   name,
   price,
   condition,
@@ -20,6 +20,20 @@ export function MiniCardAd({
 }: Props) {
   const { sizes } = useTheme();
   const avatarSize = sizes[8];
+
+  function priceFormatter(price: string) {
+    if (price.length == 3) {
+      return `${price.slice(0)},${price.slice(1)}`;
+    } else if (price.length == 4) {
+      return `${price.slice(0, 2)},${price.slice(2)}`;
+    } else if (price.length == 5) {
+      return `${price.slice(0, 3)},${price.slice(3)}`;
+    } else if (price.length == 6) {
+      return `${price.slice(0, 1)}.${price.slice(1, 4)},${price.slice(4)}`;
+    } else if (price.length == 7) {
+      return `${price.slice(0, 2)}.${price.slice(2, 5)},${price.slice(5)}`;
+    }
+  }
 
   return (
     <TouchableOpacity
@@ -36,7 +50,9 @@ export function MiniCardAd({
           w="full"
           h="32"
           borderRadius="xl"
-          source={{ uri: thumb }}
+          source={{
+            uri: thumb,
+          }}
           resizeMode="cover"
         />
         <HStack
@@ -72,8 +88,9 @@ export function MiniCardAd({
             <Text pt="2" fontSize="16" fontWeight="bold" mr="1">
               R$
             </Text>
+
             <Text fontSize="24" fontWeight="bold">
-              {price}
+              {priceFormatter(price.toString())}
             </Text>
           </HStack>
         </VStack>
