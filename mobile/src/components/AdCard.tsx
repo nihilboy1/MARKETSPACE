@@ -1,13 +1,13 @@
-import DefaultAvatar from "@assets/default-avatar.svg";
-import { HStack, Image, Text, VStack, useTheme } from "native-base";
+import { priceFormatter } from "@utils/PriceFormatter";
+import { Box, HStack, Image, Text, VStack, useTheme } from "native-base";
 import { TouchableOpacity, TouchableOpacityProps } from "react-native";
-
 type Props = TouchableOpacityProps & {
   name: string;
   price: number;
   thumb: string;
   condition: boolean;
-  mini: boolean;
+  avatar?: string;
+  isActive?: boolean;
 };
 
 export function AdCard({
@@ -15,41 +15,30 @@ export function AdCard({
   price,
   condition,
   thumb,
-  mini,
+  avatar,
+  isActive,
   ...rest
 }: Props) {
   const { sizes } = useTheme();
   const avatarSize = sizes[8];
-
-  function priceFormatter(price: string) {
-    if (price.length == 3) {
-      return `${price.slice(0)},${price.slice(1)}`;
-    } else if (price.length == 4) {
-      return `${price.slice(0, 2)},${price.slice(2)}`;
-    } else if (price.length == 5) {
-      return `${price.slice(0, 3)},${price.slice(3)}`;
-    } else if (price.length == 6) {
-      return `${price.slice(0, 1)}.${price.slice(1, 4)},${price.slice(4)}`;
-    } else if (price.length == 7) {
-      return `${price.slice(0, 2)}.${price.slice(2, 5)},${price.slice(5)}`;
-    }
-  }
 
   return (
     <TouchableOpacity
       {...rest}
       style={{
         flex: 1,
-        paddingHorizontal: 6,
+        marginHorizontal: 4,
         maxWidth: "50%",
+        marginTop: 15,
+        opacity: isActive ? 1 : 0.5,
       }}
     >
-      <VStack overflow="hidden" mt="6">
+      <VStack overflow="hidden">
         <Image
           alt="Imagem do produto"
           w="full"
           h="32"
-          borderRadius="xl"
+          borderRadius="md"
           source={{
             uri: thumb,
           }}
@@ -60,14 +49,24 @@ export function AdCard({
           alignItems="center"
           alignSelf="center"
           position="absolute"
-          w="95%"
-          mt="1"
+          w="92%"
+          mt="2"
         >
-          <DefaultAvatar
-            width={avatarSize}
-            height={avatarSize}
-            opacity={mini ? 0 : 1}
-          />
+          {avatar ? (
+            <Image
+              width="8"
+              height="8"
+              alt="Avatar do dono do anúncio"
+              source={{
+                uri: avatar,
+              }}
+              borderRadius="full"
+              borderWidth="3"
+              borderColor="blue.400"
+            />
+          ) : (
+            <Box />
+          )}
           <Text
             p="1"
             px="3"
@@ -90,7 +89,7 @@ export function AdCard({
             </Text>
 
             <Text fontSize="24" fontWeight="bold">
-              {priceFormatter(price.toString())}
+              {priceFormatter(price)}
             </Text>
           </HStack>
         </VStack>

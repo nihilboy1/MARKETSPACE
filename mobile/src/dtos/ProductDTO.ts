@@ -6,6 +6,7 @@ type paymentMethodsProps = {
 };
 
 export type productImagesProps = {
+  id?: string;
   uri?: string;
   path: string;
   name: string;
@@ -23,6 +24,7 @@ export type ProductDTO = {
   name: string;
   price: number;
   description: string;
+  is_active: boolean;
   is_new: boolean;
   accept_trade: boolean;
   product_images: productImagesProps[];

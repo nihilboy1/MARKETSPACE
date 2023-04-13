@@ -166,6 +166,7 @@ export function Home() {
       setIsLoadingProducts(true);
       const userProductsResponse = await api.get(`/users/products`);
       const generalProductsResponse = await api.get("/products");
+
       setProducts(generalProductsResponse.data);
       setNumerOfAds(userProductsResponse.data.length);
     } catch (error) {
@@ -347,7 +348,7 @@ export function Home() {
             if (!isLoadingProducts) {
               return (
                 <AdCard
-                  mini
+                  avatar={`${api.defaults.baseURL}/images/${item.user.avatar}`}
                   onPress={() => moveToAd(item.id)}
                   condition={item.is_new}
                   thumb={`${api.defaults.baseURL}/images/${item.product_images[0].path}`}

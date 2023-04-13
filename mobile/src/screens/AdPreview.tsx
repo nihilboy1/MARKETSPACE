@@ -2,11 +2,13 @@ import { Button } from "@components/Button";
 import { Carousel } from "@components/Carousel";
 import { Loading } from "@components/Loading";
 import { PaymentMethodsComponent } from "@components/PaymentMethods";
+import { productImagesProps } from "@dtos/ProductDTO";
 import { useAuthContext } from "@hooks/useAuthContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { api } from "@services/api";
 import { AppError } from "@utils/AppError";
+import { priceFormatter } from "@utils/PriceFormatter";
 import {
   Box,
   HStack,
@@ -24,11 +26,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { paymentMethodsProps } from "./Home";
 
 type RouteParams = {
+  id?: string;
+  editing?: boolean;
   title: string;
   description: string;
   price: string;
-  productPhotos: any[];
+  productPhotos: productImagesProps[];
+  deletedPhotosID: string[];
   paymentMethods: paymentMethodsProps[];
+
   isNew: boolean;
   acceptTrade: boolean;
 };
@@ -43,17 +49,19 @@ export function AdPreview() {
   const { userState } = useAuthContext();
   const route = useRoute();
   const {
+    id,
+    editing,
     title,
     description,
     price,
     productPhotos,
+    deletedPhotosID,
     paymentMethods,
     isNew,
     acceptTrade,
   } = route.params as RouteParams;
 
   async function handlePublish() {
-    setPublishLoading(true);
     try {
       const product = await api.post("/products", {
         name: title,
@@ -63,20 +71,24 @@ export function AdPreview() {
         is_new: isNew,
         accept_trade: acceptTrade,
       });
+
       const imageData = new FormData();
       productPhotos.forEach((item) => {
         const imageFile = {
           ...item,
-          id: userState.name + "." + item.id,
+          id: userState.name + "." + item.type,
         } as any;
         imageData.append("images", imageFile);
       });
       imageData.append("product_id", product.data.id);
-      const res = await api.post("/products/images", imageData, {
+
+      await api.post("/products/images", imageData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+
+      navigate("myAds");
     } catch (error) {
       const isAppError = error instanceof AppError;
       const title = isAppError
@@ -90,8 +102,64 @@ export function AdPreview() {
           bgColor: "red.500",
         });
       }
-    } finally {
-      setPublishLoading(false);
+    }
+  }
+
+  async function handleEdition() {
+    console.log("Edition");
+    try {
+      await api.put(`/products/${id}`, {
+        name: title,
+        description,
+        price: parseInt(price.replace(/[^0-9]+/g, "")),
+        payment_methods: paymentMethods,
+        is_new: isNew,
+        accept_trade: acceptTrade,
+      });
+
+      const imageData = new FormData();
+
+      const newPhotos = productPhotos.filter((photo) => {
+        if (!photo.path) {
+          return photo;
+        }
+      });
+
+      const res = await api.delete(`/products/images/`, {
+        data: { images: deletedPhotosID },
+      });
+
+      if (newPhotos.length > 0) {
+        newPhotos.forEach((item) => {
+          const imageFile = {
+            ...item,
+            id: userState.name + "." + item.type,
+          } as any;
+          imageData.append("images", imageFile);
+        });
+        imageData.append("product_id", id as string);
+
+        await api.post("/products/images", imageData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      navigate("myAds");
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não publicar o anúncio. Tente novamente mais tarde!";
+
+      if (isAppError) {
+        toast.show({
+          title,
+          placement: "top",
+          bgColor: "red.500",
+        });
+      }
     }
   }
 
@@ -165,7 +233,7 @@ export function AdPreview() {
                   R$
                 </Text>
                 <Text fontSize="26" fontWeight="bold" color="blue.400">
-                  {price}
+                  {priceFormatter(price)}
                 </Text>
               </HStack>
             </HStack>
@@ -208,9 +276,9 @@ export function AdPreview() {
                   <Tag color="white" />
                 </TouchableWithoutFeedback>
               }
-              title="Publicar"
+              title={editing ? "Atualizar" : "Publicar"}
               variant="solid"
-              onPress={handlePublish}
+              onPress={editing ? handleEdition : handlePublish}
             />
           </HStack>
         </>

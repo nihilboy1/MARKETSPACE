@@ -1,6 +1,6 @@
 import { productImagesProps } from "@dtos/ProductDTO";
 import { api } from "@services/api";
-import { Box, HStack, Image, Text, VStack } from "native-base";
+import { Box, Center, HStack, Image, Text, VStack } from "native-base";
 import { useState } from "react";
 import { Dimensions } from "react-native";
 import RNRCCarousel from "react-native-reanimated-carousel";
@@ -17,26 +17,26 @@ export function Carousel({ productImages, adIsActive = true }: CarouselProps) {
 
   return (
     <>
-      {!adIsActive && (
-        <Text
-          fontFamily="heading"
-          fontSize="18"
-          position="absolute"
-          alignSelf="center"
-          zIndex="1"
-          shadow="5"
-          mt="80"
-        >
-          ANÚNCIO DESATIVADO
-        </Text>
-      )}
-      <VStack
-        h="70"
-        alignItems="center"
-        justifyContent="flex-end"
-        shadow={2}
-        opacity={adIsActive ? "1" : "0.5"}
-      >
+      <VStack h="70" alignItems="center" justifyContent="flex-end" shadow={2}>
+        {!adIsActive && (
+          <Center
+            bgColor="gray.800"
+            opacity="0.9"
+            position="absolute"
+            zIndex="10"
+            h="70"
+            w="full"
+          >
+            <Text
+              fontFamily="heading"
+              fontSize="18"
+              alignSelf="center"
+              color="white"
+            >
+              ANÚNCIO DESATIVADO
+            </Text>
+          </Center>
+        )}
         <RNRCCarousel
           loop
           width={width}

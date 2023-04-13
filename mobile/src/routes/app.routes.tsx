@@ -1,8 +1,4 @@
-import {
-  ProductDTO,
-  paymentMethodsProps,
-  productImagesProps,
-} from "@dtos/ProductDTO";
+import { ProductDTO, productImagesProps } from "@dtos/ProductDTO";
 import {
   NativeStackNavigationProp,
   createNativeStackNavigator,
@@ -10,19 +6,25 @@ import {
 import { Ad } from "@screens/Ad";
 import { AdPreview } from "@screens/AdPreview";
 import { CreateAd } from "@screens/CreateAd";
+import { EditAd } from "@screens/EditAd";
+import { paymentMethodsProps } from "@screens/Home";
 import { MyAd } from "@screens/MyAd";
 import { HomeTabs } from "./appTabs.routes";
 
 type AppRoutes = {
-  stackHome: undefined;
   myAds: undefined;
+  stackHome: undefined;
   createAd: undefined;
   productDetails: { data: ProductDTO };
+  editAd: { data: ProductDTO };
   adPreview: {
+    editing?: boolean;
+    id?: string;
     title: string;
     description: string;
     price: string;
     productPhotos: productImagesProps[];
+    deletedPhotosID: string[];
     paymentMethods: paymentMethodsProps[];
     isNew: boolean;
     acceptTrade: boolean;
@@ -44,6 +46,7 @@ export function AppRoutes() {
       <Screen name="adPreview" component={AdPreview} />
       <Screen name="ad" component={Ad} />
       <Screen name="myAd" component={MyAd}></Screen>
+      <Screen name="editAd" component={EditAd}></Screen>
     </Navigator>
   );
 }

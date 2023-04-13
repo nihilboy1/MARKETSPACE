@@ -22,6 +22,7 @@ import { PaymentMethodsComponent } from "@components/PaymentMethods";
 import { ProductDTO } from "@dtos/ProductDTO";
 import { api } from "@services/api";
 import { AppError } from "@utils/AppError";
+import { priceFormatter } from "@utils/PriceFormatter";
 import { useCallback, useState } from "react";
 import { Linking, TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
@@ -147,7 +148,7 @@ export function Ad() {
                   R$
                 </Text>
                 <Text fontSize="26" fontWeight="bold" color="blue.400">
-                  {product.price}
+                  {priceFormatter(product.price)}
                 </Text>
               </HStack>
             </HStack>
@@ -183,7 +184,7 @@ export function Ad() {
                 R$
               </Text>
               <Text fontSize="26" fontWeight="bold" color="blue.400">
-                {product.price}
+                {priceFormatter(product.price)}
               </Text>
             </HStack>
             <Button

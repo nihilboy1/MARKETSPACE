@@ -6,26 +6,30 @@ import { api } from "@services/api";
 import { ErrorToast } from "@utils/ErrorToast";
 import { FlatList, HStack, Select, Text, useTheme } from "native-base";
 import { CaretDown, Plus } from "phosphor-react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type StateFilterProps = "todos" | "ativos" | "inativos";
+
 export function MyAds() {
   const { navigate } = useNavigation<AppNavigatorRoutesProps>();
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-  const [userProducts, setUserProducts] = useState<ProductDTO[]>();
+  const [userProducts, setUserProducts] = useState<ProductDTO[]>([]);
   const [ProductsAmount, setProductsAmount] = useState(0);
 
-  const [myAdsStateFilter, setMyAdsStateFilter] = useState<
-    "todos" | "ativos" | "inativos"
-  >("todos");
-  const { colors, sizes } = useTheme();
+  const [myAdsStateFilter, setMyAdsStateFilter] =
+    useState<StateFilterProps>("todos");
+  const { colors } = useTheme();
 
   async function fetchProducts() {
     try {
       setIsLoadingProducts(true);
       const productsData = await api.get(`/users/products`);
+      productsData.data.forEach((product: any) => {
+        console.log(product.is_active);
+      });
 
       setUserProducts(productsData.data);
       setProductsAmount(productsData.data.length);
@@ -50,6 +54,33 @@ export function MyAds() {
     navigate("myAd", { id });
   }
 
+  async function handleSetFilter() {
+    if (myAdsStateFilter === "todos") {
+      const productsData = await api.get(`/users/products`);
+      setUserProducts(productsData.data);
+    } else if (myAdsStateFilter === "ativos") {
+      const productsData = await api.get(`/users/products`);
+      const activeAds = productsData.data.filter((product: ProductDTO) => {
+        if (product.is_active) {
+          return product;
+        }
+      });
+      setUserProducts(activeAds);
+    } else if (myAdsStateFilter === "inativos") {
+      const productsData = await api.get(`/users/products`);
+      const inactiveAds = productsData.data.filter((product: ProductDTO) => {
+        if (!product.is_active) {
+          return product;
+        }
+      });
+      setUserProducts(inactiveAds);
+    }
+  }
+
+  useEffect(() => {
+    handleSetFilter();
+  }, [myAdsStateFilter]);
+
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: colors.gray[200], padding: 25 }}
@@ -67,7 +98,7 @@ export function MyAds() {
         </TouchableOpacity>
       </HStack>
       <HStack mt="5" alignItems="center" justifyContent="space-between">
-        <Text>9 anuncíos</Text>
+        <Text>{ProductsAmount} anúncios publicados</Text>
         <Select
           selectedValue={myAdsStateFilter}
           _selectedItem={{
@@ -87,9 +118,21 @@ export function MyAds() {
             setMyAdsStateFilter(itemValue as typeof myAdsStateFilter)
           }
         >
-          <Select.Item label="Todos" value="todos" />
-          <Select.Item label="Inativos" value="inativos" />
-          <Select.Item label="Ativos" value="ativos" />
+          <Select.Item
+            label="Todos"
+            value="todos"
+            onPress={() => setMyAdsStateFilter("todos")}
+          />
+          <Select.Item
+            label="Inativos"
+            value="inativos"
+            onPress={() => setMyAdsStateFilter("inativos")}
+          />
+          <Select.Item
+            label="Ativos"
+            value="ativos"
+            onPress={() => setMyAdsStateFilter("ativos")}
+          />
         </Select>
       </HStack>
       <FlatList
@@ -103,7 +146,7 @@ export function MyAds() {
         }}
         renderItem={({ item }) => (
           <AdCard
-            mini
+            isActive={item.is_active}
             onPress={() => moveToMyAd(item.id)}
             condition={item.is_new}
             thumb={`${api.defaults.baseURL}/images/${item.product_images[0].path}`}
