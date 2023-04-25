@@ -121,13 +121,31 @@ export function AdPreview() {
 
       const newPhotos = productPhotos.filter((photo) => {
         if (!photo.path) {
+          console.log("nova foto identificada");
           return photo;
         }
       });
 
-      const res = await api.delete(`/products/images/`, {
-        data: { images: deletedPhotosID },
-      });
+      console.log("ids de fotos que precisam ser deletadas:", deletedPhotosID);
+
+      try {
+        const res = await api.delete("/products/images", {
+          data: { images: deletedPhotosID },
+        });
+      } catch (error) {
+        const isAppError = error instanceof AppError;
+        const title = isAppError
+          ? error.message
+          : "Erro ao deletar as imagens selecionadas!";
+
+        if (isAppError) {
+          toast.show({
+            title,
+            placement: "top",
+            bgColor: "red.500",
+          });
+        }
+      }
 
       if (newPhotos.length > 0) {
         newPhotos.forEach((item) => {
@@ -151,7 +169,7 @@ export function AdPreview() {
       const isAppError = error instanceof AppError;
       const title = isAppError
         ? error.message
-        : "Não publicar o anúncio. Tente novamente mais tarde!";
+        : "Não foi possivel editar o anúncio. Tente novamente mais tarde!";
 
       if (isAppError) {
         toast.show({
@@ -233,7 +251,7 @@ export function AdPreview() {
                   R$
                 </Text>
                 <Text fontSize="26" fontWeight="bold" color="blue.400">
-                  {priceFormatter(price)}
+                  {priceFormatter(price.replace(/[^0-9]+/g, ""))}
                 </Text>
               </HStack>
             </HStack>

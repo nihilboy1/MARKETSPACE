@@ -16,7 +16,7 @@ export function AdCard({
   condition,
   thumb,
   avatar,
-  isActive,
+  isActive = true,
   ...rest
 }: Props) {
   const { sizes } = useTheme();
